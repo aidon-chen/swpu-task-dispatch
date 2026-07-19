@@ -1,0 +1,75 @@
+<!-- 机位管理列表页面 -->
+<view class="container">
+  <!-- 标签筛选 -->
+  <view wx:if="{{allTags.length > 0}}" class="location-tags">
+    <scroll-view scroll-x class="location-tags-scroll">
+      <view
+        class="location-tag {{activeTag === '' ? 'location-tag--active' : ''}}"
+        data-tag=""
+        bindtap="onFilterTag"
+      >全部</view>
+      <view
+        wx:for="{{allTags}}"
+        wx:key="*this"
+        class="location-tag {{activeTag === item ? 'location-tag--active' : ''}}"
+        data-tag="{{item}}"
+        bindtap="onFilterTag"
+      >{{item}}</view>
+    </scroll-view>
+  </view>
+
+  <!-- 机位列表 -->
+  <view wx:if="{{loading}}" class="empty-state">
+    <text>加载中...</text>
+  </view>
+
+  <block wx:elif="{{locations.length === 0}}">
+    <view class="empty-state">
+      <view class="icon">📍</view>
+      <view class="text">暂无机位数据</view>
+      <view wx:if="{{isDirector}}" class="text" style="font-size: 24rpx; margin-top: 8rpx;">
+        点击右下角按钮添加机位
+      </view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="location-grid">
+      <view
+        wx:for="{{locations}}"
+        wx:key="_id"
+        class="location-card card"
+        data-id="{{item._id}}"
+        bindtap="onViewDetail"
+      >
+        <!-- 机位图片 -->
+        <image
+          wx:if="{{item.images && item.images.length > 0}}"
+          class="location-card-image"
+          src="{{item.images[0]}}"
+          mode="aspectFill"
+        />
+        <view wx:else class="location-card-placeholder">📍</view>
+
+        <!-- 机位信息 -->
+        <view class="location-card-body">
+          <view class="location-card-name text-ellipsis">{{item.name}}</view>
+          <view class="location-card-desc text-ellipsis">{{item.description || '暂无描述'}}</view>
+          <view class="location-card-tags mt-8">
+            <text wx:for="{{item.tags}}" wx:key="*this" wx:for-item="tag" class="tag tag-primary mr-8">{{tag}}</text>
+          </view>
+        </view>
+
+        <!-- 主任操作 -->
+        <view wx:if="{{isDirector}}" class="location-card-actions">
+          <text class="location-card-action" data-id="{{item._id}}" catchtap="onDelete">🗑 删除</text>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 添加浮动按钮 -->
+  <view wx:if="{{isDirector}}" class="index-fab" bindtap="onAddLocation">
+    <text class="index-fab-icon">+</text>
+  </view>
+</view>

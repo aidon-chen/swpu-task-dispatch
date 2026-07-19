@@ -1,0 +1,157 @@
+sequenceDiagram
+    participant U as 用户
+    participant MP as 小程序前端
+    participant CF as 云函数
+    participant DB as 云数据库
+    participant WX as 微信服务
+    participant NEWS as 西南石油大学新闻网
+
+    %% 4.1 用户登录与角色升级流程
+    rect rgb(240, 248, 255)
+    Note over U,WX: 4.1 用户登录与角色升级流程
+    U->>MP: 点击微信登录
+    MP->>WX: wx.login() 获取code
+    WX-->>MP: 返回code
+    MP->>CF: login云函数(code)
+    CF->>WX: 获取openid
+    WX-->>CF: 返回openid
+    CF->>DB: 查询users集合
+    DB-->>CF: 返回用户信息或null
+    alt 新用户
+        CF->>DB: 创建新用户(member角色)
+        CF-->>MP: 返回新用户信息
+    else 老用户
+        CF-->>MP: 返回用户信息
+    end
+    MP-->>U: 显示首页
+
+    U->>MP: 输入权限密钥
+    MP->>CF: verifyKey云函数(key)
+    CF->>DB: 查询keys集合
+    DB-->>CF: 返回密钥信息
+    alt 密钥有效且未使用
+        CF->>DB: 更新用户角色
+        CF->>DB: 标记密钥isUsed=true
+        CF-->>MP: 角色升级成功
+        MP-->>U: 显示新角色
+    else 密钥无效/已使用
+        CF-->>MP: 密钥无效
+        MP-->>U: 提示错误
+    end
+    end
+
+    %% 4.2 任务创建与派发流程
+    rect rgb(255, 250, 240)
+    Note over U,WX: 4.2 任务创建与派发流程
+    U->>MP: 主任创建任务
+    MP->>MP: 填写任务表单(含跨部门选择)
+    MP->>CF: createTask云函数(taskData)
+    CF->>CF: 权限校验(主任或以上)
+    CF->>DB: 写入tasks集合
+    DB-->>CF: 返回taskId
+    CF->>WX: 发送订阅消息给被指派成员
+    WX-->>CF: 推送成功
+    CF-->>MP: 创建成功
+    MP-->>U: 显示任务详情
+    end
+
+    %% 4.3 任务确认与交付流程
+    rect rgb(240, 255, 240)
+    Note over U,WX: 4.3 任务确认与交付流程
+    U->>MP: 成员查看任务
+    MP->>CF: getTask云函数(taskId)
+    CF->>DB: 查询任务详情
+    DB-->>CF: 返回任务数据
+    CF-->>MP: 返回任务信息
+    MP-->>U: 显示任务详情
+
+    alt 确认接受
+        U->>MP: 点击"确认接受"
+        MP->>CF: updateTask云函数(confirmed)
+        CF->>DB: 更新任务状态
+        CF-->>MP: 确认成功
+    else 申请调整
+        U->>MP: 点击"申请调整"+填写原因
+        MP->>CF: 发送调整申请
+        CF->>WX: 通知主任审批
+        WX-->>U: 等待主任操作
+    end
+
+    Note over CF,DB: 任务到期自动标记完成
+    CF->>CF: 定时触发器检查
+    CF->>DB: 批量更新过期任务为completed
+    end
+
+    %% 4.4 人员状态设置流程
+    rect rgb(255, 240, 255)
+    Note over U,WX: 4.4 人员状态设置流程
+    U->>MP: 成员设置状态
+    MP->>MP: 选择状态类型
+    alt 选择"不可用"
+        MP->>MP: 必填文字说明
+        MP->>MP: 选填图片上传
+        MP->>CF: updateUserStatus(unavailable+原因)
+    else 选择"可用/忙碌"
+        MP->>CF: updateUserStatus(available/busy)
+    end
+    CF->>DB: 写入user_status集合
+    CF-->>MP: 状态更新成功
+    MP-->>U: 显示新状态
+    end
+
+    %% 4.5 统计报表查看流程 [🆕]
+    rect rgb(255, 255, 240)
+    Note over U,WX: 4.5 统计报表查看流程 [新增]
+    U->>MP: 进入统计报表页
+    MP->>CF: getReport云函数(userId, type, dateRange)
+    CF->>CF: 权限校验(只能查看自己或部门)
+    CF->>DB: 聚合查询tasks集合
+    DB-->>CF: 返回统计数据
+
+    alt type=month
+        CF->>CF: 按月聚合参与次数
+        CF->>CF: 生成月度分布数据
+    else type=semester
+        CF->>CF: 按学期聚合参与次数
+        CF->>CF: 生成学期分布数据
+    end
+
+    CF-->>MP: 返回报表数据(totalTasks, distribution, taskList)
+    MP->>MP: wx-charts渲染图表
+    MP-->>U: 显示统计报表
+    end
+
+    %% 4.6 新闻匹配流程 [🆕]
+    rect rgb(255, 245, 235)
+    Note over U,NEWS: 4.6 新闻匹配流程 [新增]
+    U->>MP: 点击任务"匹配新闻"按钮
+    MP->>CF: crawlNews云函数(taskId, taskTitle, startTime)
+    CF->>DB: 检查news_cache缓存(24小时内)
+    DB-->>CF: 返回缓存或null
+
+    alt 有缓存
+        CF-->>MP: 直接返回缓存新闻列表
+    else 无缓存
+        CF->>CF: jieba分词提取关键词
+        CF->>NEWS: axios请求新闻网列表
+        NEWS-->>CF: 返回HTML页面
+        CF->>CF: cheerio解析HTML
+        CF->>CF: 提取新闻列表(标题+链接+时间)
+
+        loop 遍历新闻列表
+            CF->>CF: 时间过滤(7天内)
+            CF->>CF: 标题匹配(权重60%)
+            CF->>CF: 正文匹配(权重40%)
+            CF->>CF: 计算总分
+        end
+
+        CF->>CF: 过滤(总分>30)
+        CF->>DB: 缓存到news_cache(30天)
+        CF-->>MP: 返回新闻列表
+    end
+
+    MP-->>U: 显示新闻列表(罗列式)
+    U->>MP: 点击新闻链接
+    MP->>MP: WebView打开新闻页面
+    U->>MP: 可复制链接到剪贴板
+    end

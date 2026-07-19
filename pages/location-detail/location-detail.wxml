@@ -1,0 +1,88 @@
+<!-- 机位详情页面 -->
+<view class="container" wx:if="{{!loading}}">
+  <!-- 只读模式 -->
+  <block wx:if="{{!isCreate && !isEdit && !isDirector}}">
+    <view class="card">
+      <view class="loc-detail-name">{{form.name}}</view>
+      <view class="loc-detail-desc mt-16">{{form.description || '暂无描述'}}</view>
+
+      <!-- 标签 -->
+      <view class="loc-detail-tags mt-16" wx:if="{{form.tags.length > 0}}">
+        <text wx:for="{{form.tags}}" wx:key="*this" class="tag tag-primary mr-8">{{item}}</text>
+      </view>
+
+      <!-- 注意事项 -->
+      <view class="mt-24" wx:if="{{form.notes}}">
+        <view class="form-label">注意事项</view>
+        <text class="loc-detail-notes">{{form.notes}}</text>
+      </view>
+
+      <!-- 图片 -->
+      <view class="loc-detail-images mt-24" wx:if="{{form.images.length > 0}}">
+        <image wx:for="{{form.images}}" wx:key="*this" class="loc-detail-image" src="{{item}}" mode="widthFix"/>
+      </view>
+
+      <view wx:if="{{isDirector}}" class="mt-24">
+        <button class="btn btn-primary btn-block" bindtap="onEditMode">编辑机位</button>
+      </view>
+    </view>
+  </block>
+
+  <!-- 创建/编辑模式 -->
+  <block wx:else>
+    <view class="card">
+      <view class="card-title">{{isCreate ? '添加新机位' : '编辑机位'}}</view>
+
+      <view class="form-item">
+        <view class="form-label">机位名称 <text class="required">*</text></view>
+        <input class="form-input" placeholder="如：体育馆、图书馆前广场" value="{{form.name}}" bindinput="onNameInput" maxlength="30"/>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">描述</view>
+        <textarea class="form-textarea" placeholder="描述机位的位置和特点" value="{{form.description}}" bindinput="onDescInput" maxlength="200"/>
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">注意事项</view>
+        <textarea class="form-textarea" placeholder="拍摄注意事项（如光线、最佳拍摄时间等）" value="{{form.notes}}" bindinput="onNotesInput" maxlength="500"/>
+      </view>
+
+      <!-- 标签 -->
+      <view class="form-item">
+        <view class="form-label">标签</view>
+        <view class="flex-row">
+          <input class="form-input flex-1" placeholder="输入标签后点击添加" value="{{tagInput}}" bindinput="onTagInput" maxlength="10"/>
+          <button class="btn btn-primary btn-sm ml-16" bindtap="onAddTag">添加</button>
+        </view>
+        <view class="loc-tag-list mt-8" wx:if="{{form.tags.length > 0}}">
+          <view wx:for="{{form.tags}}" wx:key="*this" class="loc-tag-item">
+            <text>{{item}}</text>
+            <text class="loc-tag-remove" data-index="{{index}}" catchtap="onRemoveTag">✕</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 图片 -->
+      <view class="form-item">
+        <view class="form-label">参考图片（最多5张）</view>
+        <view class="loc-image-list">
+          <block wx:for="{{form.images}}" wx:key="*this">
+            <view class="loc-image-item">
+              <image class="loc-image" src="{{item}}" mode="aspectFill"/>
+              <view class="loc-image-remove" data-index="{{index}}" catchtap="onRemoveImage">✕</view>
+            </view>
+          </block>
+          <view wx:if="{{form.images.length < 5}}" class="loc-image-add" bindtap="onChooseImage">
+            <text class="loc-image-add-icon">+</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 提交 -->
+      <button class="btn btn-primary btn-block mt-24" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">
+        {{isCreate ? '创建机位' : '保存修改'}}
+      </button>
+    </view>
+  </block>
+</view>

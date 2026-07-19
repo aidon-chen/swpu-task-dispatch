@@ -1,0 +1,147 @@
+<!-- 登录页面 -->
+<view class="login-container">
+  <!-- 欢迎区域 -->
+  <view class="login-header">
+    <view class="login-logo">📸</view>
+    <view class="login-title">任务派发系统</view>
+    <view class="login-subtitle">西南石油大学视觉中心</view>
+  </view>
+
+  <!-- 未注册时：用户信息填写 -->
+  <view class="login-body card">
+    <block wx:if="{{!isNewUser}}">
+      <!-- 头像选择 -->
+      <view class="login-avatar-wrap">
+        <button class="login-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <image
+            class="login-avatar"
+            src="{{avatarUrl || '/images/default-avatar.png'}}"
+            mode="aspectFill"
+          />
+          <text class="login-avatar-tip">点击选择头像</text>
+        </button>
+      </view>
+
+      <!-- 昵称输入 -->
+      <view class="form-item">
+        <view class="form-label">昵称 <text class="required">*</text></view>
+        <input
+          class="form-input"
+          type="nickname"
+          placeholder="请输入你的姓名"
+          value="{{nickName}}"
+          bindinput="onNicknameInput"
+        />
+      </view>
+
+      <!-- 微信一键登录 -->
+      <button
+        class="btn btn-primary btn-block mt-32"
+        loading="{{loading}}"
+        disabled="{{loading}}"
+        bindtap="onLogin"
+      >
+        {{loading ? '登录中...' : '微信授权登录'}}
+      </button>
+
+      <!-- 测试模式：调试登录入口 -->
+      <view wx:if="{{isTestMode}}" class="debug-section mt-24">
+        <view class="debug-toggle" bindtap="onToggleDebugLogin">
+          <text class="debug-icon">🧪</text>
+          <text class="debug-text">调试角色登录</text>
+          <text class="debug-arrow">{{showDebugLogin ? '▲' : '▼'}}</text>
+        </view>
+
+        <view wx:if="{{showDebugLogin}}" class="debug-panel mt-16">
+          <view class="debug-hint">此入口仅在测试模式下可见，角色切换不写入数据库</view>
+
+          <picker bindchange="onSelectDebugRole" value="{{selectedDebugRole}}" range="{{debugRoles}}" range-key="label">
+            <view class="debug-picker">
+              <text class="debug-picker-label">选择角色：</text>
+              <text class="debug-picker-value">{{debugRoles[selectedDebugRole].label}}</text>
+              <text class="debug-picker-arrow">›</text>
+            </view>
+          </picker>
+
+          <button
+            class="btn btn-debug btn-block mt-16"
+            loading="{{loading}}"
+            disabled="{{loading}}"
+            bindtap="onDebugLogin"
+          >
+            以调试角色登录
+          </button>
+        </view>
+      </view>
+    </block>
+
+    <!-- 新用户：选择部门 -->
+    <block wx:else>
+      <view class="login-section-title">选择你的部门</view>
+      <view class="login-dept-list">
+        <view
+          wx:for="{{departments}}"
+          wx:key="value"
+          class="login-dept-item {{selectedDepartment === item.value ? 'login-dept-item--selected' : ''}}"
+          data-dept="{{item.value}}"
+          bindtap="onSelectDepartment"
+        >
+          <view class="login-dept-icon">{{item.value === 'photography' ? '📷' : '🎬'}}</view>
+          <view class="login-dept-label">{{item.label}}</view>
+          <view class="login-dept-desc">{{item.desc}}</view>
+          <view wx:if="{{selectedDepartment === item.value}}" class="login-dept-check">✓</view>
+        </view>
+      </view>
+
+      <button
+        class="btn btn-primary btn-block mt-32"
+        loading="{{loading}}"
+        disabled="{{loading || !selectedDepartment}}"
+        bindtap="onConfirmRegister"
+      >
+        确认加入
+      </button>
+
+      <view class="text-center mt-16">
+        <text class="login-switch" bindtap="onBack">返回修改信息</text>
+      </view>
+    </block>
+
+    <!-- 权限密钥入口 -->
+    <view class="login-key-section mt-32">
+      <view class="divider"></view>
+      <view class="login-key-toggle" bindtap="onToggleKeyInput">
+        <text>🔑 使用权限密钥升级角色</text>
+        <text class="login-key-arrow">{{showKeyInput ? '▲' : '▼'}}</text>
+      </view>
+
+      <view wx:if="{{showKeyInput}}" class="login-key-input mt-16">
+        <view class="flex-row">
+          <input
+            class="form-input flex-1"
+            placeholder="请输入权限密钥"
+            value="{{keyValue}}"
+            bindinput="onKeyInput"
+            maxlength="20"
+          />
+          <button
+            class="btn btn-primary btn-sm ml-16"
+            loading="{{keyVerifying}}"
+            disabled="{{keyVerifying}}"
+            bindtap="onVerifyKey"
+          >
+            验证
+          </button>
+        </view>
+        <view class="login-key-hint mt-8">
+          密钥由视觉中心主任发放，一密钥一用户，一次性使用
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部提示 -->
+  <view class="login-footer">
+    <text>仅限西南石油大学视觉中心内部使用</text>
+  </view>
+</view>

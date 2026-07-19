@@ -1,0 +1,73 @@
+/**
+ * 权限密钥验证页面样式
+ */
+
+.key-role-info {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.key-avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: var(--bg-color);
+  flex-shrink: 0;
+}
+
+.key-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.key-dept {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  margin-top: 4rpx;
+}
+
+.key-hint {
+  font-size: 24rpx;
+  color: var(--text-hint);
+  line-height: 1.6;
+  padding: 16rpx;
+  background: var(--bg-color);
+  border-radius: 8rpx;
+}
+
+/* 验证结果 */
+.key-result {
+  text-align: center;
+  padding: 40rpx 0;
+}
+
+.key-result-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.key-result-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.key-result--success .key-result-title {
+  color: var(--success);
+}
+
+.key-result--fail .key-result-title {
+  color: var(--danger);
+}
+
+.key-result-desc {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+.key-result-role {
+  color: var(--primary);
+  font-weight: 600;
+}

@@ -1,0 +1,93 @@
+<!-- 统计报表页面 -->
+<view class="container">
+  <!-- 筛选栏 -->
+  <view class="stats-filters">
+    <view class="stats-filters-row">
+      <block wx:for="{{periodOptions}}" wx:key="value">
+        <view
+          class="stats-filter-btn {{filter.period === item.value ? 'stats-filter-btn--active' : ''}}"
+          data-period="{{item.value}}"
+          bindtap="onPeriodChange"
+        >{{item.label}}</view>
+      </block>
+    </view>
+
+    <!-- 自定义日期 -->
+    <view wx:if="{{filter.period === 'custom'}}" class="stats-date-range mt-16">
+      <picker mode="date" value="{{filter.startDate}}" bindchange="onStartDateChange">
+        <view class="form-picker">{{filter.startDate || '开始日期'}}</view>
+      </picker>
+      <text class="mx-8">~</text>
+      <picker mode="date" value="{{filter.endDate}}" bindchange="onEndDateChange">
+        <view class="form-picker">{{filter.endDate || '结束日期'}}</view>
+      </picker>
+    </view>
+
+    <!-- 学期选择 -->
+    <view wx:if="{{filter.period === 'semester'}}" class="mt-16">
+      <picker mode="selector" range="{{semesters}}" bindchange="onSemesterChange">
+        <view class="form-picker">{{filter.semester || '选择学期'}}</view>
+      </picker>
+    </view>
+  </view>
+
+  <!-- 汇总数字 -->
+  <view class="stats-summary">
+    <view class="stats-summary-item">
+      <text class="stats-summary-num">{{summary.totalTasks}}</text>
+      <text class="stats-summary-label">总任务数</text>
+    </view>
+    <view class="stats-summary-item">
+      <text class="stats-summary-num" style="color: #4CAF50">{{summary.completedTasks}}</text>
+      <text class="stats-summary-label">已完成</text>
+    </view>
+    <view class="stats-summary-item">
+      <text class="stats-summary-num" style="color: #FF9800">{{summary.totalHours}}</text>
+      <text class="stats-summary-label">总工时</text>
+    </view>
+    <view class="stats-summary-item">
+      <text class="stats-summary-num" style="color: #2196F3">{{summary.avgPerPerson}}</text>
+      <text class="stats-summary-label">人均任务</text>
+    </view>
+  </view>
+
+  <!-- 视图切换 -->
+  <view class="flex-between mb-16">
+    <view class="card-title" style="margin-bottom: 0;">详细数据</view>
+    <view class="stats-view-toggle" bindtap="onToggleView">
+      {{showChart ? '📋 列表' : '📊 图表'}}
+    </view>
+  </view>
+
+  <!-- 图表视图 -->
+  <view wx:if="{{showChart && chartData}}" class="card">
+    <chart type="bar" chartData="{{chartData}}" title="任务统计图" width="{{680}}" height="{{400}}"/>
+  </view>
+
+  <!-- 列表视图 -->
+  <block wx:if="{{!showChart}}">
+    <view class="stats-list">
+      <block wx:for="{{detailList}}" wx:key="_id">
+        <view class="stats-list-item card">
+          <view class="flex-between mb-8">
+            <text class="stats-list-name">{{item.name || item.title}}</text>
+            <text class="stats-list-count">{{item.count || 0}} 次</text>
+          </view>
+          <view wx:if="{{item.tasks}}" class="stats-list-tasks">
+            <block wx:for="{{item.tasks}}" wx:key="_id" wx:for-item="t">
+              <view class="stats-task-row">
+                <text class="text-ellipsis flex-1">{{t.title}}</text>
+                <text class="stats-task-date">{{t.date}}</text>
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </block>
+
+  <!-- 导出按钮 -->
+  <button class="btn btn-primary btn-block mt-24" bindtap="onExport">📥 导出报表数据</button>
+
+  <view style="height: 60rpx;"></view>
+</view>

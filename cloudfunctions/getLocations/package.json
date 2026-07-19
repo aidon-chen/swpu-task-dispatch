@@ -1,0 +1,7 @@
+{
+  "name": "getLocations",
+  "version": "1.0.0",
+  "description": "获取机位列表云函数",
+  "main": "index.js",
+  "dependencies": { "wx-server-sdk": "latest" }
+}

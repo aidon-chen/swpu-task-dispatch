@@ -1,0 +1,108 @@
+<!-- 首页 - 任务列表 -->
+<view class="index-page">
+  <!-- 头部统计 -->
+  <view class="index-header">
+    <view class="index-greeting">
+      你好，{{userInfo.name || '同学'}}
+      <text wx:if="{{isDirector}}" class="tag tag-primary ml-8">主任</text>
+    </view>
+    <view class="index-stats">
+      <view class="index-stat-item">
+        <text class="index-stat-num">{{stats.pending || 0}}</text>
+        <text class="index-stat-label">待确认</text>
+      </view>
+      <view class="index-stat-item">
+        <text class="index-stat-num">{{stats.inProgress || 0}}</text>
+        <text class="index-stat-label">进行中</text>
+      </view>
+      <view class="index-stat-item">
+        <text class="index-stat-num">{{stats.completed || 0}}</text>
+        <text class="index-stat-label">已完成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索栏 -->
+  <view class="index-search">
+    <input
+      class="form-input"
+      placeholder="搜索任务标题..."
+      bindinput="onSearch"
+      confirm-type="search"
+    />
+  </view>
+
+  <!-- 标签切换 -->
+  <view class="index-tabs">
+    <view
+      class="index-tab {{activeTab === 'all' ? 'index-tab--active' : ''}}"
+      data-tab="all"
+      bindtap="onTabChange"
+    >全部任务</view>
+    <view
+      class="index-tab {{activeTab === 'mine' ? 'index-tab--active' : ''}}"
+      data-tab="mine"
+      bindtap="onTabChange"
+    >我的任务</view>
+  </view>
+
+  <!-- 状态筛选 -->
+  <scroll-view class="index-filters" scroll-x>
+    <view
+      class="index-filter-item {{filter.status === '' ? 'index-filter-item--active' : ''}}"
+      data-status=""
+      bindtap="onFilterStatus"
+    >全部</view>
+    <view
+      class="index-filter-item {{filter.status === 'pending' ? 'index-filter-item--active' : ''}}"
+      data-status="pending"
+      bindtap="onFilterStatus"
+    >待确认</view>
+    <view
+      class="index-filter-item {{filter.status === 'confirmed' ? 'index-filter-item--active' : ''}}"
+      data-status="confirmed"
+      bindtap="onFilterStatus"
+    >已确认</view>
+    <view
+      class="index-filter-item {{filter.status === 'in_progress' ? 'index-filter-item--active' : ''}}"
+      data-status="in_progress"
+      bindtap="onFilterStatus"
+    >进行中</view>
+    <view
+      class="index-filter-item {{filter.status === 'completed' ? 'index-filter-item--active' : ''}}"
+      data-status="completed"
+      bindtap="onFilterStatus"
+    >已完成</view>
+  </scroll-view>
+
+  <!-- 任务列表 -->
+  <view class="index-task-list">
+    <block wx:if="{{tasks.length === 0 && !loading}}">
+      <view class="empty-state">
+        <view class="icon">📋</view>
+        <view class="text">暂无任务</view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <task-card
+        wx:for="{{tasks}}"
+        wx:key="_id"
+        task="{{item}}"
+        showActions="{{true}}"
+        bind:accept="onAcceptTask"
+        bind:cancel="onCancelTask"
+        bind:complete="onCompleteTask"
+      />
+    </block>
+
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="loading-more">加载中...</view>
+    <view wx:elif="{{!hasMore && tasks.length > 0}}" class="no-more">— 没有更多了 —</view>
+  </view>
+
+  <!-- 创建任务浮动按钮（仅主任可见） -->
+  <view wx:if="{{isDirector}}" class="index-fab" bindtap="onCreateTask">
+    <text class="index-fab-icon">+</text>
+  </view>
+</view>

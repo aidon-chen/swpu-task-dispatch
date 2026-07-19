@@ -1,0 +1,154 @@
+classDiagram
+    class User {
+        +String _id
+        +String openid
+        +String name
+        +String department
+        +String role
+        +String avatar
+        +String semester
+        +Timestamp createdAt
+        +Timestamp updatedAt
+        +login()
+        +updateRole()
+        +getProfile()
+    }
+
+    class Task {
+        +String _id
+        +String title
+        +String type
+        +Timestamp startTime
+        +Timestamp endTime
+        +String location
+        +String contact
+        +String description
+        +String deliverables
+        +Array assignedTo
+        +String creatorId
+        +String status
+        +String priority
+        +String locationId
+        +Boolean isCrossDepartment
+        +String semester
+        +Timestamp createdAt
+        +Timestamp updatedAt
+        +create()
+        +update()
+        +assignMember()
+        +complete()
+        +cancel()
+        +getStatistics()
+    }
+
+    class UserStatus {
+        +String _id
+        +String userId
+        +String status
+        +String reason
+        +Array images
+        +Timestamp startDate
+        +Timestamp endDate
+        +Timestamp createdAt
+        +setAvailable()
+        +setBusy()
+        +setUnavailable()
+        +getStatusHistory()
+    }
+
+    class Location {
+        +String _id
+        +String name
+        +String description
+        +String notes
+        +Array images
+        +Array tags
+        +String createdBy
+        +Timestamp createdAt
+        +Timestamp updatedAt
+        +create()
+        +update()
+        +delete()
+        +getDetails()
+    }
+
+    class Key {
+        +String _id
+        +String key
+        +String role
+        +Boolean isUsed
+        +String usedBy
+        +Timestamp usedAt
+        +String createdBy
+        +Timestamp createdAt
+        +generate()
+        +verify()
+        +invalidate()
+    }
+
+    class Notification {
+        +String _id
+        +String userId
+        +String taskId
+        +String type
+        +String content
+        +Boolean isRead
+        +Timestamp createdAt
+        +send()
+        +markAsRead()
+        +getUnreadList()
+    }
+
+    class NewsCache {
+        +String _id
+        +String taskId
+        +String taskTitle
+        +Array newsList
+        +Timestamp cachedAt
+        +Timestamp expireAt
+        +crawl()
+        +match()
+        +getCache()
+        +isExpired()
+    }
+
+    class Report {
+        +String userId
+        +Timestamp startDate
+        +Timestamp endDate
+        +String type
+        +Number totalTasks
+        +Array monthlyDistribution
+        +Array semesterDistribution
+        +Array taskList
+        +Array chartData
+        +generate()
+        +exportToWPS()
+        +filterByMonth()
+        +filterBySemester()
+    }
+
+    %% 关系定义
+    User "1" --> "*" Task : creates (creatorId)
+    User "1" --> "*" UserStatus : has
+    User "1" --> "*" Notification : receives
+    User "1" --> "*" Report : views
+    
+    Task "1" --> "*" User : assignedTo
+    Task "1" --> "0..1" Location : at (locationId)
+    Task "1" --> "*" NewsCache : matched with
+    
+    Key "1" --> "0..1" User : used by (usedBy)
+    Key "1" --> "1" User : created by (createdBy)
+    
+    Location "1" --> "1" User : created by (createdBy)
+
+    %% 样式定义
+    style User fill:#e1f5fe,stroke:#0288d1
+    style Task fill:#fff3e0,stroke:#f57c00
+    style UserStatus fill:#e8f5e9,stroke:#388e3c
+    style Location fill:#fce4ec,stroke:#c62828
+    style Key fill:#f3e5f5,stroke:#7b1fa2
+    style Notification fill:#fffde7,stroke:#fbc02d
+    style NewsCache fill:#e0f2f1,stroke:#00796b
+    style Report fill:#e8eaf6,stroke:#283593

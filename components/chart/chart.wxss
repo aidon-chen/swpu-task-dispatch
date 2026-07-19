@@ -1,0 +1,15 @@
+/**
+ * 图表组件样式
+ */
+
+.chart-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300rpx;
+}
+
+.chart-canvas {
+  display: block;
+}

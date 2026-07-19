@@ -1,0 +1,53 @@
+<!-- 任务卡片组件 -->
+<view class="task-card {{compact ? 'task-card--compact' : ''}}" bindtap="onTapCard">
+  <!-- 标题行 -->
+  <view class="task-card__header">
+    <view class="task-card__title text-ellipsis">{{task.title}}</view>
+    <view class="task-card__badges">
+      <text wx:if="{{task.priority === 'urgent'}}" class="tag tag-danger mr-8">紧急</text>
+      <text class="tag" style="background: {{statusColor}}20; color: {{statusColor}}">{{statusLabel}}</text>
+    </view>
+  </view>
+
+  <!-- 信息行 -->
+  <view class="task-card__info" wx:if="{{!compact}}">
+    <view class="task-card__info-item">
+      <text class="task-card__icon">📋</text>
+      <text>{{typeLabel}}</text>
+    </view>
+    <view class="task-card__info-item">
+      <text class="task-card__icon">🕐</text>
+      <text>{{formattedStartTime}}</text>
+    </view>
+    <view class="task-card__info-item" wx:if="{{task.location}}">
+      <text class="task-card__icon">📍</text>
+      <text class="text-ellipsis">{{task.location}}</text>
+    </view>
+    <view class="task-card__info-item" wx:if="{{task.isCrossDepartment}}">
+      <text class="tag tag-primary">跨部门</text>
+    </view>
+  </view>
+
+  <!-- 描述预览（紧凑模式隐藏） -->
+  <view class="task-card__desc text-ellipsis" wx:if="{{task.description && !compact}}">
+    {{task.description}}
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="task-card__actions" wx:if="{{showActions}}" catchtap="noop">
+    <!-- 主任操作：待确认状态 -->
+    <block wx:if="{{isDirector && task.status === 'pending'}}">
+      <button class="btn btn-sm btn-outline" size="mini" bindtap="onEdit">编辑</button>
+      <button class="btn btn-sm btn-danger" size="mini" bindtap="onCancel">取消</button>
+    </block>
+
+    <!-- 成员操作：待确认状态 -->
+    <block wx:if="{{!isDirector && task.status === 'pending'}}">
+      <button class="btn btn-sm btn-primary" size="mini" bindtap="onAccept">确认接受</button>
+      <button class="btn btn-sm btn-outline" size="mini" bindtap="onComplete">标记完成</button>
+    </block>
+
+    <!-- 新闻匹配按钮 -->
+    <button class="btn btn-sm btn-outline" size="mini" bindtap="onViewNews">📰 新闻匹配</button>
+  </view>
+</view>

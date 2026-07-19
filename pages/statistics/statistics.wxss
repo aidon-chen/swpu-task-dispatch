@@ -1,0 +1,116 @@
+/**
+ * 统计报表页面样式
+ */
+
+.stats-filters {
+  margin-bottom: 24rpx;
+}
+
+.stats-filters-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.stats-filter-btn {
+  flex: 1;
+  text-align: center;
+  padding: 14rpx;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  background: #FFF;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.stats-filter-btn--active {
+  background: var(--primary);
+  color: #FFF;
+}
+
+.stats-date-range {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.mx-8 { margin: 0 8rpx; }
+
+/* 汇总 */
+.stats-summary {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.stats-summary-item {
+  flex: 1;
+  background: #FFF;
+  border-radius: 12rpx;
+  padding: 24rpx 16rpx;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.stats-summary-num {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stats-summary-label {
+  display: block;
+  font-size: 20rpx;
+  color: var(--text-secondary);
+  margin-top: 4rpx;
+}
+
+.stats-view-toggle {
+  font-size: 24rpx;
+  color: var(--primary);
+  padding: 8rpx 16rpx;
+}
+
+/* 列表 */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.stats-list-item {
+  display: block;
+}
+
+.stats-list-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stats-list-count {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.stats-list-tasks {
+  margin-top: 8rpx;
+}
+
+.stats-task-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8rpx 0;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  border-top: 1rpx solid var(--bg-color);
+}
+
+.stats-task-date {
+  font-size: 22rpx;
+  color: var(--text-hint);
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}

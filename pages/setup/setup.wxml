@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="card">
+    <view class="icon">🗄️</view>
+    <view class="title">数据库初始化</view>
+    <view class="desc">首次使用前需要创建数据库集合（users, tasks, keys 等）</view>
+
+    <view class="status-box status-{{status}}">
+      <text wx:if="{{status === 'ready'}}">点击下方按钮开始初始化</text>
+      <text wx:if="{{status === 'loading'}}">⏳ {{message}}</text>
+      <text wx:if="{{status === 'success'}}">✅ {{message}}</text>
+      <text wx:if="{{status === 'error'}}">❌ {{message}}</text>
+    </view>
+
+    <view class="results" wx:if="{{results}}">
+      <view class="result-item" wx:if="{{results.created.length}}">
+        <text class="label">✅ 新创建:</text>
+        <text>{{results.created.join(', ')}}</text>
+      </view>
+      <view class="result-item" wx:if="{{results.skipped.length}}">
+        <text class="label">⏭️ 已存在:</text>
+        <text>{{results.skipped.join(', ')}}</text>
+      </view>
+      <view class="result-item error" wx:if="{{results.errors.length}}">
+        <text class="label">❌ 失败:</text>
+        <text wx:for="{{results.errors}}" wx:key="name">{{item.name}}({{item.message}})</text>
+      </view>
+    </view>
+
+    <button
+      class="init-btn {{status === 'loading' ? 'disabled' : ''}}"
+      disabled="{{status === 'loading'}}"
+      bindtap="onInit"
+    >
+      {{status === 'loading' ? '初始化中...' : '开始初始化数据库'}}
+    </button>
+
+    <button class="back-btn" bindtap="onBack" wx:if="{{status === 'success'}}">
+      返回
+    </button>
+  </view>
+</view>

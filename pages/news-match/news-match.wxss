@@ -1,0 +1,79 @@
+/**
+ * 新闻匹配页面样式
+ */
+
+.news-task-info {
+  padding: 16rpx;
+  background: var(--bg-color);
+  border-radius: 8rpx;
+}
+
+.news-task-label {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.news-task-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+  margin-top: 4rpx;
+}
+
+.news-task-time {
+  font-size: 22rpx;
+  color: var(--text-hint);
+  display: block;
+  margin-top: 2rpx;
+}
+
+.news-cache-tip {
+  font-size: 22rpx;
+  color: var(--text-hint);
+  padding: 12rpx 16rpx;
+  text-align: center;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.news-item {
+  transition: all 0.2s;
+}
+
+.news-item:active {
+  background: #FAFAFA;
+}
+
+.news-item-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  margin-right: 12rpx;
+}
+
+.news-item-date {
+  font-size: 22rpx;
+  color: var(--text-hint);
+}
+
+.news-item-actions {
+  display: flex;
+  align-items: center;
+}
+
+.news-item-link {
+  font-size: 22rpx;
+  color: var(--primary);
+}
+
+.news-item-view {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+}

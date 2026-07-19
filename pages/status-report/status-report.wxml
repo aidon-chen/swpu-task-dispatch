@@ -1,0 +1,95 @@
+<!-- 状态上报页面 -->
+<view class="container">
+  <!-- 状态选择 -->
+  <view class="card">
+    <view class="card-title">设置我的状态</view>
+    <view class="status-options">
+      <view
+        wx:for="{{statusOptions}}"
+        wx:key="value"
+        class="status-option {{currentStatus === item.value ? 'status-option--active' : ''}}"
+        data-status="{{item.value}}"
+        bindtap="onSelectStatus"
+      >
+        <view class="status-option-icon">{{item.icon}}</view>
+        <view class="status-option-label">{{item.label}}</view>
+        <view class="status-option-desc">{{item.desc}}</view>
+        <view wx:if="{{currentStatus === item.value}}" class="status-option-check">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 不可用原因 -->
+  <view class="card" wx:if="{{currentStatus === 'unavailable'}}">
+    <view class="card-title">不可用原因</view>
+
+    <view class="form-item">
+      <view class="form-label">原因说明 <text class="required">*</text></view>
+      <textarea
+        class="form-textarea"
+        placeholder="请详细说明不可用的原因（如：上课、考试、外出等）"
+        value="{{reason}}"
+        bindinput="onReasonInput"
+        maxlength="200"
+      />
+    </view>
+
+    <!-- 时间段 -->
+    <view class="flex-row form-item-gap">
+      <view class="form-item flex-1">
+        <view class="form-label">开始日期</view>
+        <picker mode="date" value="{{unavailableRange.startDate}}" bindchange="onStartDateChange">
+          <view class="form-picker">
+            <text class="{{unavailableRange.startDate ? '' : 'placeholder'}}">{{unavailableRange.startDate || '选择日期'}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-item flex-1 ml-16">
+        <view class="form-label">结束日期</view>
+        <picker mode="date" value="{{unavailableRange.endDate}}" bindchange="onEndDateChange">
+          <view class="form-picker">
+            <text class="{{unavailableRange.endDate ? '' : 'placeholder'}}">{{unavailableRange.endDate || '选择日期'}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <!-- 图片上传 -->
+    <view class="form-item">
+      <view class="form-label">补充图片（选填，最多3张）</view>
+      <view class="status-images">
+        <block wx:for="{{images}}" wx:key="*this">
+          <view class="status-image-item">
+            <image class="status-image" src="{{item}}" mode="aspectFill"/>
+            <view class="status-image-remove" data-index="{{index}}" catchtap="onRemoveImage">✕</view>
+          </view>
+        </block>
+        <view wx:if="{{images.length < 3}}" class="status-image-add" bindtap="onChooseImage">
+          <text class="status-image-add-icon">+</text>
+          <text class="status-image-add-text">添加图片</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <button
+    class="btn btn-primary btn-block mt-24"
+    loading="{{submitting}}"
+    disabled="{{submitting}}"
+    bindtap="onSubmit"
+  >更新状态</button>
+
+  <!-- 历史记录 -->
+  <view class="card mt-24" wx:if="{{statusHistory.length > 0}}">
+    <view class="card-title">历史状态</view>
+    <view class="status-history">
+      <block wx:for="{{statusHistory}}" wx:key="_id">
+        <view class="status-history-item">
+          <status-badge type="member" status="{{item.status}}" size="sm"/>
+          <text class="status-history-date">{{item.createdAt}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,89 @@
+/**
+ * 任务卡片组件样式
+ */
+
+.task-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+}
+
+.task-card:active {
+  background: #FAFAFA;
+  transform: scale(0.99);
+}
+
+.task-card--compact {
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+/* 标题行 */
+.task-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+}
+
+.task-card__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.task-card__badges {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 信息行 */
+.task-card__info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx 24rpx;
+  margin-bottom: 12rpx;
+}
+
+.task-card__info-item {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.task-card__icon {
+  margin-right: 6rpx;
+  font-size: 22rpx;
+}
+
+/* 描述 */
+.task-card__desc {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  margin-bottom: 16rpx;
+  line-height: 1.5;
+}
+
+/* 操作按钮 */
+.task-card__actions {
+  display: flex;
+  gap: 16rpx;
+  justify-content: flex-end;
+  padding-top: 16rpx;
+  border-top: 1rpx solid var(--border-color);
+}
+
+.task-card__actions button {
+  margin: 0;
+  padding: 0 20rpx;
+  height: 56rpx;
+  font-size: 24rpx;
+  line-height: 56rpx;
+}

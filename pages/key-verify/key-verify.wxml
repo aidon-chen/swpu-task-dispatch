@@ -1,0 +1,74 @@
+<!-- 权限密钥验证页面 -->
+<view class="container">
+  <!-- 当前角色信息 -->
+  <view class="card">
+    <view class="card-title">当前角色</view>
+    <view class="key-role-info">
+      <image
+        class="key-avatar"
+        src="{{currentUser.avatar || '/images/default-avatar.png'}}"
+        mode="aspectFill"
+      />
+      <view>
+        <view class="key-name">{{currentUser.name || '未知用户'}}</view>
+        <view class="key-dept">
+          {{currentUser.department === 'photography' ? '摄影部' : '视频部'}}
+        </view>
+        <view class="key-current-role mt-8">
+          <text class="tag tag-primary">{{currentRoleName}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 密钥输入 -->
+  <view class="card">
+    <view class="card-title">输入权限密钥</view>
+    <view class="form-item">
+      <view class="form-label">密钥</view>
+      <input
+        class="form-input"
+        placeholder="请输入主任发放的权限密钥"
+        value="{{keyValue}}"
+        bindinput="onKeyInput"
+        maxlength="20"
+        focus="{{true}}"
+      />
+    </view>
+    <view class="key-hint">
+      💡 密钥由视觉中心主任在管理后台生成，每个密钥只能使用一次。验证成功后，你的角色将自动升级。
+    </view>
+
+    <button
+      class="btn btn-primary btn-block mt-24"
+      loading="{{verifying}}"
+      disabled="{{verifying || !keyValue}}"
+      bindtap="onVerify"
+    >
+      {{verifying ? '验证中...' : '验证密钥'}}
+    </button>
+  </view>
+
+  <!-- 验证结果 -->
+  <view wx:if="{{result}}" class="card">
+    <block wx:if="{{result.success}}">
+      <view class="key-result key-result--success">
+        <view class="key-result-icon">✅</view>
+        <view class="key-result-title">验证成功！</view>
+        <view class="key-result-desc">
+          你的角色已升级为 <text class="key-result-role">{{result.roleName}}</text>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="key-result key-result--fail">
+        <view class="key-result-icon">❌</view>
+        <view class="key-result-title">验证失败</view>
+        <view class="key-result-desc">{{result.message}}</view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 返回按钮 -->
+  <button class="btn btn-outline btn-block mt-24" bindtap="onBack">返回</button>
+</view>

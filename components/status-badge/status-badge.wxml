@@ -1,0 +1,5 @@
+<!-- 状态标签组件 -->
+<view class="status-badge status-badge--{{size}}" style="background-color: {{bgColor}}; border-color: {{color}};">
+  <view class="status-badge__dot" style="background-color: {{dotColor}};"></view>
+  <text wx:if="{{showText}}" class="status-badge__text" style="color: {{color}};">{{label}}</text>
+</view>

@@ -1,0 +1,118 @@
+<!-- 成员选择器组件 -->
+<view class="member-picker">
+  <!-- 搜索栏 -->
+  <view class="member-picker__search">
+    <input
+      class="form-input"
+      placeholder="搜索成员姓名..."
+      value="{{searchKey}}"
+      bindinput="onSearch"
+    />
+  </view>
+
+  <!-- 操作栏 -->
+  <view class="member-picker__toolbar" wx:if="{{showRandom}}">
+    <text class="member-picker__count">已选 {{selectedIds.length}} 人</text>
+    <view class="member-picker__toolbar-actions">
+      <button class="btn btn-sm btn-outline" size="mini" bindtap="onOpenRandom">🎲 随机选择</button>
+      <button
+        wx:if="{{selectedIds.length > 0}}"
+        class="btn btn-sm btn-outline"
+        size="mini"
+        bindtap="onClearAll"
+      >清空</button>
+    </view>
+  </view>
+
+  <!-- 成员列表 -->
+  <scroll-view class="member-picker__list" scroll-y>
+    <block wx:if="{{loading}}">
+      <view class="empty-state">
+        <text>加载中...</text>
+      </view>
+    </block>
+
+    <block wx:elif="{{filteredMembers.length === 0}}">
+      <view class="empty-state">
+        <text class="text">{{searchKey ? '未找到匹配的成员' : '暂无成员数据'}}</text>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view
+        wx:for="{{filteredMembers}}"
+        wx:key="_id"
+        class="member-picker__item {{selectedIds.indexOf(item._id) >= 0 ? 'member-picker__item--selected' : ''}}"
+        data-id="{{item._id}}"
+        bindtap="onToggleMember"
+      >
+        <view class="member-picker__item-left">
+          <image
+            class="member-picker__avatar"
+            src="{{item.avatar || '/images/default-avatar.png'}}"
+            mode="aspectFill"
+          />
+          <view>
+            <view class="member-picker__name">{{item.name}}</view>
+            <view class="member-picker__dept">{{item.department === 'photography' ? '摄影部' : '视频部'}}</view>
+          </view>
+        </view>
+
+        <view class="member-picker__item-right">
+          <!-- 状态标签 -->
+          <text
+            wx:if="{{item.status === 'available'}}"
+            class="tag tag-success"
+          >空闲</text>
+          <text
+            wx:elif="{{item.status === 'busy'}}"
+            class="tag tag-warning"
+          >忙碌</text>
+          <text
+            wx:else
+            class="tag tag-danger"
+          >不可用</text>
+
+          <!-- 选中标记 -->
+          <view wx:if="{{selectedIds.indexOf(item._id) >= 0}}" class="member-picker__check">✓</view>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- 已选成员预览 -->
+  <view class="member-picker__selected" wx:if="{{selectedIds.length > 0}}">
+    <text class="member-picker__selected-label">已选择：</text>
+    <block wx:for="{{selectedIds}}" wx:key="*this">
+      <text class="tag tag-primary mr-8">{{item}}</text>
+    </block>
+  </view>
+
+  <!-- 随机选择弹窗 -->
+  <view class="member-picker__modal" wx:if="{{showRandomModal}}" catchtap="onCloseRandom">
+    <view class="member-picker__modal-content" catchtap="noop">
+      <view class="member-picker__modal-title">随机选择成员</view>
+      <view class="member-picker__modal-body">
+        <view class="form-item">
+          <view class="form-label">从"可用"状态的成员中随机抽取</view>
+          <view class="member-picker__random-input">
+            <input
+              class="form-input"
+              type="number"
+              value="{{randomCount}}"
+              min="1"
+              max="{{999}}"
+              bindinput="onRandomCountChange"
+              placeholder="输入抽取人数"
+            />
+            <text class="member-picker__random-unit">人</text>
+          </view>
+        </view>
+      </view>
+      <view class="member-picker__modal-footer">
+        <button class="btn btn-outline btn-block" bindtap="onCloseRandom">取消</button>
+        <button class="btn btn-primary btn-block ml-16" bindtap="onRandomSelect">确定随机抽取</button>
+      </view>
+    </view>
+  </view>
+</view>

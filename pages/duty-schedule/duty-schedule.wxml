@@ -1,0 +1,141 @@
+<!-- 值班表页面 -->
+<view class="container">
+  <!-- 统计摘要 -->
+  <view class="schedule-summary">
+    <view class="schedule-summary-item">
+      <text class="schedule-summary-num" style="color: #4CAF50">{{statusSummary.available}}</text>
+      <text class="schedule-summary-label">空闲</text>
+    </view>
+    <view class="schedule-summary-item">
+      <text class="schedule-summary-num" style="color: #FF9800">{{statusSummary.busy}}</text>
+      <text class="schedule-summary-label">忙碌</text>
+    </view>
+    <view class="schedule-summary-item">
+      <text class="schedule-summary-num" style="color: #F44336">{{statusSummary.unavailable}}</text>
+      <text class="schedule-summary-label">不可用</text>
+    </view>
+  </view>
+
+  <!-- 月份切换 -->
+  <view class="schedule-month-nav">
+    <view class="schedule-month-arrow" bindtap="onPrevMonth">◀</view>
+    <view class="schedule-month-title">{{currentYear}}年 {{currentMonth}}月</view>
+    <view class="schedule-month-arrow" bindtap="onNextMonth">▶</view>
+    <view class="schedule-view-toggle" bindtap="onToggleView">
+      {{viewMode === 'calendar' ? '📋 列表' : '📅 日历'}}
+    </view>
+  </view>
+
+  <!-- 日历视图 -->
+  <block wx:if="{{viewMode === 'calendar'}}">
+    <view class="schedule-calendar">
+      <!-- 星期头 -->
+      <view class="schedule-weekdays">
+        <view wx:for="{{weekDays}}" wx:key="*this" class="schedule-weekday">{{item}}</view>
+      </view>
+
+      <!-- 日期网格 -->
+      <view class="schedule-days">
+        <view
+          wx:for="{{calendarDays}}"
+          wx:key="index"
+          class="schedule-day {{item.empty ? 'schedule-day--empty' : ''}} {{item.isWeekend ? 'schedule-day--weekend' : ''}} {{item.isToday ? 'schedule-day--today' : ''}}"
+        >
+          <text wx:if="{{!item.empty}}" class="schedule-day-num">{{item.day}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 主任视图：成员可用性矩阵 -->
+    <view class="card mt-16" wx:if="{{isDirector}}">
+      <view class="card-title">成员可用性</view>
+      <scroll-view scroll-x class="schedule-matrix">
+        <view class="schedule-matrix-header">
+          <view class="schedule-matrix-name-col">姓名</view>
+          <view
+            wx:for="{{calendarDays}}"
+            wx:key="index"
+            wx:if="{{!item.empty}}"
+            class="schedule-matrix-date-col"
+          >{{item.day}}</view>
+        </view>
+        <view wx:for="{{members}}" wx:key="_id" class="schedule-matrix-row">
+          <view class="schedule-matrix-name-col text-ellipsis">{{item.name}}</view>
+          <view
+            wx:for="{{calendarDays}}"
+            wx:for-item="day"
+            wx:key="index"
+            wx:if="{{!day.empty}}"
+            class="schedule-matrix-cell"
+          >
+            <view class="schedule-cell-dot schedule-cell-dot--available"></view>
+          </view>
+        </view>
+      </scroll-view>
+      <view wx:if="{{members.length === 0}}" class="empty-state" style="padding: 40rpx 0;">
+        <text class="text">暂无成员数据</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 列表视图 -->
+  <block wx:if="{{viewMode === 'list'}}">
+    <view class="schedule-list">
+      <block wx:for="{{members}}" wx:key="_id">
+        <view class="card schedule-member-card" data-id="{{item._id}}" bindtap="onSelectMember">
+          <view class="flex-between">
+            <view class="flex-row">
+              <image class="schedule-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
+              <view>
+                <view class="schedule-member-name">{{item.name}}</view>
+                <view class="schedule-member-dept">{{item.department === 'photography' ? '摄影部' : '视频部'}}</view>
+              </view>
+            </view>
+            <status-badge type="member" status="{{item.status || 'available'}}" size="md"/>
+          </view>
+
+          <!-- 展开详情（不可用原因） -->
+          <view wx:if="{{selectedMemberId === item._id && item.status === 'unavailable'}}" class="schedule-detail mt-16">
+            <text wx:if="{{item.reason}}" class="schedule-detail-text">📝 {{item.reason}}</text>
+            <view wx:if="{{item.startDate}}" class="schedule-detail-text mt-8">
+              📅 {{item.startDate}} ~ {{item.endDate || '未定'}}
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </block>
+
+  <!-- 操作按钮 -->
+  <view class="schedule-actions mt-24">
+    <button class="btn btn-outline" bindtap="onGoStatusReport">修改我的状态</button>
+    <button wx:if="{{!isDirector}}" class="btn btn-primary ml-16 flex-1" bindtap="onToggleSettings">
+      {{showSettings ? '收起设置' : '设置固定空闲时间'}}
+    </button>
+  </view>
+
+  <!-- 周固定时间设置面板 -->
+  <view class="card mt-24" wx:if="{{showSettings}}">
+    <view class="card-title">每周固定空闲时间段</view>
+    <block wx:for="{{weeklySchedule}}" wx:key="day">
+      <view class="schedule-week-item">
+        <view class="flex-row flex-between">
+          <view class="flex-row">
+            <switch checked="{{item.enabled}}" color="#1976D2" data-index="{{index}}" bindchange="onToggleDay"/>
+            <text class="ml-16">{{item.label}}</text>
+          </view>
+          <block wx:if="{{item.enabled}}">
+            <picker mode="time" value="{{item.startTime}}" data-index="{{index}}" data-field="startTime" bindchange="onTimeChange">
+              <text class="schedule-timepicker">{{item.startTime || '开始'}}</text>
+            </picker>
+            <text class="mx-8">~</text>
+            <picker mode="time" value="{{item.endTime}}" data-index="{{index}}" data-field="endTime" bindchange="onTimeChange">
+              <text class="schedule-timepicker">{{item.endTime || '结束'}}</text>
+            </picker>
+          </block>
+        </view>
+      </view>
+    </block>
+    <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onSaveWeeklySchedule">保存设置</button>
+  </view>
+</view>

@@ -1,0 +1,15 @@
+# CODEOWNERS —— 修改以下路径会自动请求对应成员评审。
+# 即使仓库未开启「强制 CODEOWNER 评审」，GitHub 也会据此自动指派评审人。
+# TODO: 把下面的 @aidon-chen 替换为团队实际 GitHub 账号（如摄影部主任 / 视频部主任）。
+
+# 默认负责人（仓库所有者）
+*       @aidon-chen
+
+# 小程序前端
+/miniprogram/        @aidon-chen
+
+# 云函数后端
+/miniprogram/cloudfunctions/   @aidon-chen
+
+# 文档
+/docs/   @aidon-chen

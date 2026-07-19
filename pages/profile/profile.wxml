@@ -1,0 +1,40 @@
+<!-- 个人中心页面 -->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="profile-header">
+    <image class="profile-avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
+    <view class="profile-name">{{userInfo.name || '未知用户'}}</view>
+    <view class="profile-info">
+      <text class="tag tag-primary">{{roleName}}</text>
+      <text class="tag tag-success ml-8">{{departmentName}}</text>
+    </view>
+    <view class="profile-semester mt-8">{{userInfo.semester || ''}}</view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="profile-menus">
+    <view
+      wx:for="{{menus}}"
+      wx:key="index"
+      class="profile-menu-item"
+      data-url="{{item.url}}"
+      data-tab="{{item.tab}}"
+      bindtap="onMenuTap"
+    >
+      <view class="profile-menu-icon">{{item.icon}}</view>
+      <view class="flex-1">
+        <view class="profile-menu-title">{{item.title}}</view>
+        <view class="profile-menu-desc">{{item.desc}}</view>
+      </view>
+      <text class="profile-menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="profile-footer mt-32">
+    <button class="btn btn-outline btn-block mb-16" bindtap="onAbout">关于</button>
+    <button class="btn btn-danger btn-block" bindtap="onLogout">退出登录</button>
+  </view>
+
+  <view style="height: 60rpx;"></view>
+</view>

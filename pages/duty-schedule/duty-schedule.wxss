@@ -1,0 +1,239 @@
+/**
+ * 值班表页面样式
+ */
+
+/* 统计摘要 */
+.schedule-summary {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.schedule-summary-item {
+  flex: 1;
+  background: #FFF;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.schedule-summary-num {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+}
+
+.schedule-summary-label {
+  display: block;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  margin-top: 4rpx;
+}
+
+/* 月份导航 */
+.schedule-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  padding: 16rpx 0;
+  margin-bottom: 16rpx;
+}
+
+.schedule-month-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.schedule-month-arrow {
+  font-size: 28rpx;
+  padding: 8rpx 16rpx;
+  color: var(--primary);
+}
+
+.schedule-view-toggle {
+  font-size: 24rpx;
+  color: var(--primary);
+  margin-left: auto;
+}
+
+/* 日历 */
+.schedule-calendar {
+  background: #FFF;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.schedule-weekdays {
+  display: flex;
+  background: var(--primary);
+  color: #FFF;
+}
+
+.schedule-weekday {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 24rpx;
+}
+
+.schedule-days {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.schedule-day {
+  width: calc(100% / 7);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.schedule-day--empty {
+  background: transparent;
+}
+
+.schedule-day--weekend {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.schedule-day--today .schedule-day-num {
+  background: var(--primary);
+  color: #FFF;
+}
+
+.schedule-day-num {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  color: var(--text-primary);
+}
+
+/* 可用性矩阵 */
+.schedule-matrix {
+  white-space: nowrap;
+}
+
+.schedule-matrix-header {
+  display: flex;
+  border-bottom: 1rpx solid var(--border-color);
+}
+
+.schedule-matrix-name-col {
+  width: 120rpx;
+  flex-shrink: 0;
+  padding: 12rpx 8rpx;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.schedule-matrix-date-col {
+  width: 56rpx;
+  flex-shrink: 0;
+  text-align: center;
+  padding: 12rpx 0;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+}
+
+.schedule-matrix-row {
+  display: flex;
+  border-bottom: 1rpx solid var(--bg-color);
+}
+
+.schedule-matrix-cell {
+  width: 56rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 0;
+}
+
+.schedule-cell-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+}
+
+.schedule-cell-dot--available { background: #4CAF50; }
+.schedule-cell-dot--busy { background: #FF9800; }
+.schedule-cell-dot--unavailable { background: #F44336; }
+
+/* 列表视图 */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.schedule-member-card {
+  transition: all 0.2s;
+}
+
+.schedule-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.schedule-member-name {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.schedule-member-dept {
+  font-size: 22rpx;
+  color: var(--text-secondary);
+  margin-top: 2rpx;
+}
+
+.schedule-detail {
+  padding: 16rpx;
+  background: var(--bg-color);
+  border-radius: 8rpx;
+}
+
+.schedule-detail-text {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  display: block;
+}
+
+/* 操作按钮 */
+.schedule-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+/* 周固定时间 */
+.schedule-week-item {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid var(--bg-color);
+}
+
+.schedule-week-item:last-child {
+  border-bottom: none;
+}
+
+.schedule-timepicker {
+  font-size: 26rpx;
+  color: var(--primary);
+  padding: 8rpx 16rpx;
+  background: var(--bg-color);
+  border-radius: 8rpx;
+}
+
+.mx-8 {
+  margin: 0 8rpx;
+}

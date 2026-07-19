@@ -1,0 +1,86 @@
+<!-- 新闻匹配页面 -->
+<view class="container">
+  <!-- 搜索区域 -->
+  <view class="card">
+    <view class="card-title">🔍 新闻匹配查询</view>
+
+    <!-- 关联任务信息 -->
+    <view wx:if="{{taskTitle}}" class="news-task-info mb-16">
+      <text class="news-task-label">关联任务：</text>
+      <text class="news-task-title">{{taskTitle}}</text>
+      <text wx:if="{{taskTime}}" class="news-task-time">{{taskTime}}</text>
+    </view>
+
+    <!-- 搜索框 -->
+    <view wx:if="{{!taskId}}" class="form-item mb-16">
+      <view class="form-label">查询关键词</view>
+      <view class="flex-row">
+        <input
+          class="form-input flex-1"
+          placeholder="输入任务名称或关键词..."
+          value="{{taskTitle}}"
+          bindinput="onSearch"
+          confirm-type="search"
+        />
+        <button class="btn btn-primary btn-sm ml-16" bindtap="onManualSearch">搜索</button>
+      </view>
+    </view>
+
+    <!-- 刷新（已有taskId时） -->
+    <button
+      wx:if="{{taskId}}"
+      class="btn btn-primary btn-block"
+      loading="{{crawling}}"
+      disabled="{{crawling}}"
+      bindtap="loadNewsMatch"
+    >
+      {{crawling ? '正在匹配新闻...' : '🔄 重新匹配'}}
+    </button>
+  </view>
+
+  <!-- 缓存标记 -->
+  <view wx:if="{{fromCache && newsList.length > 0}}" class="news-cache-tip">
+    💾 使用缓存结果（24小时内有效）
+  </view>
+
+  <!-- 匹配结果列表 -->
+  <view wx:if="{{newsList.length > 0}}" class="news-list">
+    <block wx:for="{{newsList}}" wx:key="index">
+      <view class="news-item card" data-url="{{item.url}}" bindtap="onOpenNews">
+        <view class="flex-between mb-8">
+          <text class="news-item-title text-ellipsis">{{item.title}}</text>
+          <text
+            wx:if="{{item.matchScore !== undefined}}"
+            class="tag"
+            style="background: {{item.matchScore >= 0.5 ? '#4CAF50' : '#FF9800'}}20; color: {{item.matchScore >= 0.5 ? '#4CAF50' : '#FF9800'}};"
+          >匹配度 {{item.matchScore * 100}}%</text>
+        </view>
+        <view class="flex-between">
+          <text wx:if="{{item.publishDate}}" class="news-item-date">{{item.publishDate}}</text>
+          <view class="news-item-actions">
+            <text class="news-item-link" data-url="{{item.url}}" catchtap="onCopyLink">📋 复制链接</text>
+            <text class="news-item-view ml-16">查看详情 ›</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 空结果 -->
+  <view wx:if="{{!loading && newsList.length === 0 && taskTitle}}" class="empty-state">
+    <view class="icon">📰</view>
+    <view class="text">未找到匹配的新闻报道</view>
+    <view class="text" style="font-size: 24rpx; margin-top: 8rpx;">
+      可能原因：新闻尚未发布、关键词不匹配、或网络问题
+    </view>
+  </view>
+
+  <!-- 初始状态 -->
+  <view wx:if="{{!taskTitle && !taskId}}" class="empty-state">
+    <view class="icon">🔍</view>
+    <view class="text">输入关键词查询相关新闻</view>
+    <view class="text" style="font-size: 24rpx; margin-top: 8rpx; color: var(--text-hint);">
+      数据来源：西南石油大学新闻网
+    </view>
+  </view>
+</view>

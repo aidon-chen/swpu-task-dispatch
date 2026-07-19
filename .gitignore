@@ -1,0 +1,30 @@
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.swp
+*~
+.vscode/
+.idea
+
+# ===== Node / WeChat build artifacts =====
+node_modules/
+miniprogram_npm/
+
+# ===== CloudBase local cache =====
+.cloudbase/
+
+# ===== WeChat DevTools private config =====
+project.private.config.json
+
+# ===== Archives / backups =====
+*.zip
+backups/
+
+# ===== Local data / non-source files =====
+.duty_parse.json
+*.xlsx
+
+# ===== Agent / tooling internals =====
+.workbuddy/

@@ -1,0 +1,129 @@
+<!-- 任务详情页面 -->
+<view class="container" wx:if="{{!loading && task}}">
+  <!-- 状态头部 -->
+  <view class="detail-header">
+    <view class="detail-header-top flex-between">
+      <status-badge type="task" status="{{task.status}}" size="lg"/>
+      <text wx:if="{{task.priority === 'urgent'}}" class="tag tag-danger">紧急</text>
+    </view>
+    <view class="detail-title">{{task.title}}</view>
+    <view class="detail-meta">
+      <text wx:if="{{task.isCrossDepartment}}" class="tag tag-primary mr-8">跨部门</text>
+      <text class="detail-type">{{task.type}}</text>
+    </view>
+  </view>
+
+  <!-- 时间信息 -->
+  <view class="card">
+    <view class="card-title">🕐 时间安排</view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">开始时间</text>
+      <text class="detail-info-value">{{task.startTime}}</text>
+    </view>
+    <view class="detail-info-row" wx:if="{{task.endTime}}">
+      <text class="detail-info-label">结束时间</text>
+      <text class="detail-info-value">{{task.endTime}}</text>
+    </view>
+  </view>
+
+  <!-- 地点与联络 -->
+  <view class="card" wx:if="{{task.location || locationInfo}}">
+    <view class="card-title">📍 地点与联络</view>
+    <view class="detail-info-row" wx:if="{{task.location}}">
+      <text class="detail-info-label">任务地点</text>
+      <text class="detail-info-value">{{task.location}}</text>
+    </view>
+    <view class="detail-info-row" wx:if="{{locationInfo}}">
+      <text class="detail-info-label">关联机位</text>
+      <text class="detail-info-value detail-link" bindtap="onViewLocation">{{locationInfo.name}}</text>
+    </view>
+    <view class="detail-info-row" wx:if="{{task.contact}}">
+      <text class="detail-info-label">联络人</text>
+      <text class="detail-info-value">{{task.contact}}</text>
+    </view>
+  </view>
+
+  <!-- 指派人员 -->
+  <view class="card">
+    <view class="card-title">👥 指派人员</view>
+    <view class="detail-members">
+      <block wx:for="{{assignedMembers}}" wx:key="_id">
+        <view class="detail-member-item">
+          <image class="detail-member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
+          <view class="flex-1">
+            <view class="detail-member-name">{{item.name}}</view>
+            <view class="detail-member-dept">{{item.department === 'photography' ? '摄影部' : '视频部'}}</view>
+          </view>
+          <status-badge type="member" status="{{item.status || 'available'}}" size="sm"/>
+        </view>
+      </block>
+      <view wx:if="{{assignedMembers.length === 0}}" class="empty-state" style="padding: 40rpx 0;">
+        <text class="text">暂未指派人员</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 任务描述 -->
+  <view class="card" wx:if="{{task.description}}">
+    <view class="card-title">📝 任务描述</view>
+    <view class="detail-desc">{{task.description}}</view>
+  </view>
+
+  <!-- 成果要求 -->
+  <view class="card" wx:if="{{task.deliverables}}">
+    <view class="card-title">📦 成果要求</view>
+    <view class="detail-desc">{{task.deliverables}}</view>
+  </view>
+
+  <!-- 操作栏 -->
+  <view class="detail-actions" wx:if="{{!actionLoading}}">
+    <!-- 成员操作 -->
+    <block wx:if="{{isAssigned && !isDirector}}">
+      <block wx:if="{{task.status === 'pending'}}">
+        <button class="btn btn-primary btn-block mb-16" bindtap="onAccept">确认接受任务</button>
+      </block>
+      <block wx:elif="{{task.status === 'confirmed'}}">
+        <button class="btn btn-primary btn-block mb-16" bindtap="onStartTask">标记开始</button>
+      </block>
+      <block wx:elif="{{task.status === 'in_progress'}}">
+        <button class="btn btn-success btn-block mb-16" bindtap="onComplete">标记完成</button>
+        <button class="btn btn-outline btn-block" bindtap="onOpenAdjust">申请调整交付状态</button>
+      </block>
+    </block>
+
+    <!-- 主任操作 -->
+    <block wx:if="{{isDirector}}">
+      <block wx:if="{{task.status !== 'cancelled' && task.status !== 'completed'}}">
+        <button class="btn btn-primary btn-block mb-16" bindtap="onEdit">编辑任务</button>
+        <button class="btn btn-success btn-block mb-16" bindtap="onComplete">直接标记完成</button>
+        <button class="btn btn-danger btn-block" bindtap="onCancel">取消任务</button>
+      </block>
+    </block>
+
+    <!-- 新闻匹配 -->
+    <button class="btn btn-outline btn-block mt-16" bindtap="onViewNews">📰 查看新闻匹配</button>
+  </view>
+
+  <!-- 调整交付状态弹窗 -->
+  <view class="detail-modal" wx:if="{{showAdjustModal}}" catchtap="onCloseAdjust">
+    <view class="detail-modal-content" catchtap="noop">
+      <view class="detail-modal-title">申请调整交付状态</view>
+      <view class="form-item">
+        <view class="form-label">请说明调整原因</view>
+        <textarea class="form-textarea" placeholder="请说明为何需要调整交付状态..." value="{{adjustReason}}" bindinput="onAdjustReasonInput" maxlength="300"/>
+      </view>
+      <view class="detail-modal-footer">
+        <button class="btn btn-outline" bindtap="onCloseAdjust">取消</button>
+        <button class="btn btn-primary ml-16 flex-1" loading="{{actionLoading}}" disabled="{{!adjustReason}}" bindtap="onSubmitAdjust">提交申请</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全距离 -->
+  <view style="height: 60rpx;"></view>
+</view>
+
+<!-- 加载中 -->
+<view wx:if="{{loading}}" class="empty-state" style="padding-top: 200rpx;">
+  <text>加载中...</text>
+</view>

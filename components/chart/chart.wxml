@@ -1,0 +1,15 @@
+<!-- 图表组件 -->
+<view class="chart-container">
+  <view wx:if="{{!initialized}}" class="empty-state">
+    <text>图表加载中...</text>
+  </view>
+  <canvas
+    wx:else
+    canvas-id="chartCanvas"
+    class="chart-canvas"
+    style="width: {{width}}rpx; height: {{height}}rpx;"
+    bindtouchstart="onChartTouch"
+    bindtouchmove="onChartTouch"
+    bindtouchend="onChartTouch"
+  />
+</view>

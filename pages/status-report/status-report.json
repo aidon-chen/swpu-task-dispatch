@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "状态上报",
+  "usingComponents": {
+    "status-badge": "/components/status-badge/status-badge"
+  }
+}

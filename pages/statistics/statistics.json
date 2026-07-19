@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "统计报表",
+  "usingComponents": {
+    "chart": "/components/chart/chart",
+    "status-badge": "/components/status-badge/status-badge"
+  }
+}
