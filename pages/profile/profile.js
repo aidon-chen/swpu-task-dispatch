@@ -5,6 +5,7 @@
 
 const auth = require('../../utils/auth.js');
 const storage = require('../../utils/storage.js');
+const notification = require('../../utils/notification.js');
 
 Page({
   data: {
@@ -18,6 +19,8 @@ Page({
     isDirector: false,
     /** 是否为视觉中心主任 */
     isCenterDirector: false,
+    /** 未读通知数 */
+    unreadCount: 0,
     /** 菜单列表 */
     menus: []
   },
@@ -51,8 +54,8 @@ Page({
     const isDir = auth.isDirector();
     const isCenter = auth.isCenterDirector();
 
-    // 构建菜单
-    const menus = this.buildMenus(isDir, isCenter);
+    // 构建菜单（使用当前未读数）
+    const menus = this.buildMenus(isDir, isCenter, this.data.unreadCount);
 
     this.setData({
       userInfo,
@@ -62,13 +65,36 @@ Page({
       isCenterDirector: isCenter,
       menus
     });
+
+    // 异步刷新未读红点与菜单角标
+    this.refreshMsg();
+  },
+
+  /**
+   * 拉取未读数：刷新 TabBar 红点 + 菜单角标
+   */
+  async refreshMsg() {
+    const count = await notification.refreshUnreadBadge();
+    if (count !== this.data.unreadCount) {
+      this.setData({
+        unreadCount: count,
+        menus: this.buildMenus(auth.isDirector(), auth.isCenterDirector(), count)
+      });
+    }
   },
 
   /**
    * 构建菜单
    */
-  buildMenus(isDirector, isCenterDirector) {
+  buildMenus(isDirector, isCenterDirector, unreadCount = 0) {
     const menus = [
+      {
+        icon: '🔔',
+        title: '消息中心',
+        desc: unreadCount > 0 ? `您有 ${unreadCount} 条未读通知` : '查看任务通知',
+        url: '/pages/messages/messages',
+        badge: unreadCount
+      },
       {
         icon: '📋',
         title: '我的任务',

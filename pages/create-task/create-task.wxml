@@ -2,6 +2,27 @@
 <view class="container" wx:if="{{ready}}">
   <view class="page-title">{{isEdit ? '编辑任务' : '创建新任务'}}</view>
 
+  <!-- 模板操作 -->
+  <view class="card">
+    <view class="flex-between">
+      <view class="form-label">从模板创建</view>
+      <button class="btn btn-outline btn-sm" bindtap="onOpenTemplatePicker">选择模板</button>
+    </view>
+    <view wx:if="{{appliedTemplateName}}" class="form-hint mt-8">已套用模板：{{appliedTemplateName}}</view>
+
+    <view class="divider"></view>
+
+    <view class="flex-between">
+      <view class="form-label">存为模板</view>
+      <switch checked="{{form.isTemplate}}" bindchange="onToggleSaveTemplate" color="#1976D2"/>
+    </view>
+    <view wx:if="{{form.isTemplate}}" class="form-item mt-8">
+      <view class="form-label">模板名称</view>
+      <input class="form-input" placeholder="留空则使用任务标题" value="{{form.templateName}}" bindinput="onTemplateNameInput" maxlength="30"/>
+      <view class="form-hint mt-8">保存为模板后，可在创建同类任务时一键套用（无需填写时间与人员）</view>
+    </view>
+  </view>
+
   <!-- 基本信息 -->
   <view class="card">
     <view class="card-title">基本信息</view>
@@ -125,9 +146,34 @@
       loading="{{submitting}}"
       disabled="{{submitting}}"
       bindtap="onSubmit"
-    >{{isEdit ? '更新任务' : '创建任务'}}</button>
+    >{{isEdit ? '更新任务' : (form.isTemplate ? '保存模板' : '创建任务')}}</button>
   </view>
 
   <!-- 底部安全距离 -->
   <view class="safe-bottom" style="height: 60rpx;"></view>
+
+  <!-- 模板选择弹层 -->
+  <view wx:if="{{showTemplatePicker}}" class="modal-mask" bindtap="onCloseTemplatePicker">
+    <view class="modal-sheet" catchtap="noop">
+      <view class="modal-header">
+        <text class="modal-title">选择任务模板</text>
+        <text class="modal-close" bindtap="onCloseTemplatePicker">✕</text>
+      </view>
+      <view wx:if="{{templateLoading}}" class="modal-empty">加载中...</view>
+      <view wx:elif="{{templates.length === 0}}" class="modal-empty">暂无模板，可先在“存为模板”中保存常用任务</view>
+      <scroll-view wx:else class="modal-list" scroll-y>
+        <view
+          wx:for="{{templates}}"
+          wx:key="_id"
+          class="template-item"
+          data-id="{{item._id}}"
+          bindtap="onSelectTemplate"
+        >
+          <view class="template-name">{{item.templateName}}</view>
+          <view class="template-meta">{{item.type}}{{item.isCrossDepartment ? ' · 跨部门' : ''}}{{item.location ? ' · ' + item.location : ''}}</view>
+          <view wx:if="{{item.description}}" class="template-desc">{{item.description}}</view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
 </view>

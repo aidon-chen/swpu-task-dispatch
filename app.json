@@ -14,6 +14,7 @@
     "pages/key-verify/key-verify",
     "pages/key-generate/key-generate",
     "pages/messages/messages",
+    "pages/web-view/web-view",
     "pages/setup/setup"
   ],
   "window": {

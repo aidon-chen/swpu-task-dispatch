@@ -101,10 +101,14 @@ Page({
       });
 
       if (res.code === 0 && res.data) {
+        const detail = (res.data.detailList || []).map(d => ({ ...d }));
+        const maxTotal = detail.reduce((m, d) => Math.max(m, d.total || 0), 0);
+        detail.forEach(d => {
+          d.barPercent = maxTotal > 0 ? Math.round((d.total / maxTotal) * 100) : 0;
+        });
         this.setData({
           summary: res.data.summary || this.data.summary,
-          chartData: res.data.chartData || null,
-          detailList: res.data.detailList || []
+          detailList: detail
         });
       }
     } catch (err) {
@@ -168,12 +172,11 @@ Page({
         department: this.data.filter.department
       });
 
-      if (res.code === 0 && res.data && res.data.fileUrl) {
-        // 复制导出链接或下载
+      if (res.code === 0 && res.data && res.data.text) {
         wx.setClipboardData({
-          data: res.data.fileUrl,
+          data: res.data.text,
           success: () => {
-            wx.showToast({ title: '报表链接已复制', icon: 'success' });
+            wx.showToast({ title: '报表已复制', icon: 'success' });
           }
         });
       } else {

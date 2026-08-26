@@ -28,8 +28,20 @@ Page({
       assignedTo: [],
       priority: 'normal',
       isCrossDepartment: false,
-      locationId: ''
+      locationId: '',
+      /** 是否存为模板（开时免填时间/人员） */
+      isTemplate: false,
+      /** 模板名称（存为模板时使用） */
+      templateName: '',
+      /** 从模板创建时记录来源模板ID（提交时回传云端做兜底合并） */
+      fromTemplateId: ''
     },
+    /** 模板选择弹层状态 */
+    showTemplatePicker: false,
+    templates: [],
+    templateLoading: false,
+    /** 已套用模板名称（用于页面提示） */
+    appliedTemplateName: '',
     /** 任务类型选项 */
     taskTypes: [
       '会议拍摄', '活动拍摄', '新闻摄影', '视频拍摄',
@@ -145,7 +157,12 @@ Page({
    * 标题输入
    */
   onTitleInput(e) {
-    this.setData({ 'form.title': e.detail.value });
+    // 用户手动修改标题后，脱离已套用的模板来源
+    this.setData({
+      'form.title': e.detail.value,
+      'form.fromTemplateId': '',
+      appliedTemplateName: ''
+    });
   },
 
   /**
@@ -386,9 +403,10 @@ Page({
 
   /**
    * 表单验证
+   * 存为模板时仅校验标题/类型，时间与人选在实例化时填写
    */
   validateForm() {
-    const { title, type, startTime, assignedTo } = this.data.form;
+    const { title, type, startTime, assignedTo, isTemplate } = this.data.form;
 
     if (!title.trim()) {
       wx.showToast({ title: '请输入任务标题', icon: 'none' });
@@ -397,6 +415,9 @@ Page({
     if (!type) {
       wx.showToast({ title: '请选择任务类型', icon: 'none' });
       return false;
+    }
+    if (isTemplate) {
+      return true;
     }
     if (!startTime) {
       wx.showToast({ title: '请选择开始时间', icon: 'none' });
@@ -411,7 +432,7 @@ Page({
   },
 
   /**
-   * 提交任务
+   * 提交任务（支持：创建任务 / 存为模板 / 从模板实例化）
    */
   async onSubmit() {
     if (!this.validateForm()) return;
@@ -419,31 +440,44 @@ Page({
     this.setData({ submitting: true });
 
     try {
-      const formData = {
-        ...this.data.form,
-        title: this.data.form.title.trim(),
-        description: this.data.form.description.trim(),
-        deliverables: this.data.form.deliverables.trim(),
-        location: this.data.form.location.trim(),
-        contact: this.data.form.contact.trim()
+      const form = this.data.form;
+      const base = {
+        title: form.title.trim(),
+        type: form.type,
+        startTime: form.startTime,
+        endTime: form.endTime,
+        location: form.location.trim(),
+        contact: form.contact.trim(),
+        description: form.description.trim(),
+        deliverables: form.deliverables.trim(),
+        assignedTo: form.assignedTo,
+        priority: form.priority,
+        isCrossDepartment: form.isCrossDepartment,
+        locationId: form.locationId,
+        fromTemplateId: form.fromTemplateId || ''
       };
 
       let res;
       if (this.data.isEdit) {
-        res = await api.updateTask(this.data.taskId, formData);
+        res = await api.updateTask(this.data.taskId, base);
+      } else if (form.isTemplate) {
+        res = await api.createTask({
+          ...base,
+          isTemplate: true,
+          templateName: (form.templateName || '').trim() || form.title.trim()
+        });
       } else {
-        res = await api.createTask(formData);
+        res = await api.createTask(base);
       }
 
       if (res.code === 0) {
         // 清除草稿
         storage.clearDraftTask();
 
-        wx.showToast({
-          title: this.data.isEdit ? '任务已更新' : '任务已创建',
-          icon: 'success',
-          duration: 1500
-        });
+        const tip = this.data.isEdit
+          ? '任务已更新'
+          : (form.isTemplate ? '模板已保存' : '任务已创建');
+        wx.showToast({ title: tip, icon: 'success', duration: 1500 });
 
         setTimeout(() => {
           wx.navigateBack({ delta: 1 });
@@ -457,5 +491,97 @@ Page({
     } finally {
       this.setData({ submitting: false });
     }
+  },
+
+  /**
+   * 切换“存为模板”
+   */
+  onToggleSaveTemplate(e) {
+    this.setData({ 'form.isTemplate': !!e.detail.value });
+  },
+
+  /**
+   * 模板名称输入
+   */
+  onTemplateNameInput(e) {
+    this.setData({ 'form.templateName': e.detail.value });
+  },
+
+  /**
+   * 打开模板选择弹层并加载模板列表
+   */
+  async onOpenTemplatePicker() {
+    this.setData({ showTemplatePicker: true });
+    if (this.data.templates.length === 0) {
+      await this.loadTemplates();
+    }
+  },
+
+  /**
+   * 关闭模板选择弹层
+   */
+  onCloseTemplatePicker() {
+    this.setData({ showTemplatePicker: false });
+  },
+
+  /**
+   * 阻止冒泡（弹层内容区点击不关闭）
+   */
+  noop() {},
+
+  /**
+   * 加载可见模板列表
+   */
+  async loadTemplates() {
+    this.setData({ templateLoading: true });
+    try {
+      const res = await api.getTemplates();
+      if (res.code === 0 && res.data) {
+        this.setData({ templates: res.data.templates || [] });
+      } else {
+        wx.showToast({ title: res.message || '加载模板失败', icon: 'none' });
+      }
+    } catch (err) {
+      console.error('[创建任务] 加载模板失败:', err);
+      wx.showToast({ title: '加载模板失败', icon: 'none' });
+    } finally {
+      this.setData({ templateLoading: false });
+    }
+  },
+
+  /**
+   * 选择模板 → 预填表单（时间/人员留空，由本次实例填写）
+   */
+  onSelectTemplate(e) {
+    const id = e.currentTarget.dataset.id;
+    const t = this.data.templates.find(x => x._id === id);
+    if (!t) return;
+
+    const form = { ...this.data.form };
+    form.title = t.title || '';
+    form.type = t.type || '';
+    form.location = t.location || '';
+    form.contact = t.contact || '';
+    form.description = t.description || '';
+    form.deliverables = t.deliverables || '';
+    form.priority = t.priority || 'normal';
+    form.isCrossDepartment = !!t.isCrossDepartment;
+    form.locationId = t.locationId || '';
+    // 时间/人员每次实例独立，不预填
+    form.startTime = '';
+    form.endTime = '';
+    form.assignedTo = [];
+    form.isTemplate = false;
+    form.fromTemplateId = t._id;
+    form.templateName = '';
+
+    this.setData({
+      form,
+      typeIndex: this.data.taskTypes.indexOf(t.type),
+      priorityIndex: t.priority === 'urgent' ? 1 : 0,
+      appliedTemplateName: t.templateName || t.title,
+      showTemplatePicker: false
+    });
+    this.initTimePickers();
   }
 });

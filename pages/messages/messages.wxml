@@ -1,2 +1,48 @@
-<!-- 消息中心页面 — T04 阶段实现 -->
-<view class="placeholder"><text>消息中心功能即将上线</text></view>
+<!-- 消息中心页面 -->
+<view class="container">
+
+  <!-- 顶部操作栏 -->
+  <view class="msg-toolbar" wx:if="{{!empty}}">
+    <text class="msg-toolbar-tip">共 {{unreadCount}} 条未读</text>
+    <button
+      class="msg-readall-btn"
+      size="mini"
+      bindtap="onMarkAllRead"
+      disabled="{{unreadCount === 0}}"
+    >全部已读</button>
+  </view>
+
+  <!-- 通知列表 -->
+  <view class="msg-list" wx:if="{{!empty}}">
+    <view
+      wx:for="{{list}}"
+      wx:key="_id"
+      class="msg-item {{item.isRead ? 'is-read' : ''}}"
+      data-id="{{item._id}}"
+      data-taskid="{{item.taskId}}"
+      bindtap="onItemTap"
+    >
+      <view class="msg-icon">{{item.meta.icon}}</view>
+      <view class="msg-body">
+        <view class="msg-top">
+          <text class="msg-label">{{item.meta.label}}</text>
+          <text class="msg-time">{{item.createdAt}}</text>
+        </view>
+        <view class="msg-content">{{item.content}}</view>
+      </view>
+      <view class="msg-dot" wx:if="{{!item.isRead}}"></view>
+    </view>
+
+    <view class="msg-foot" wx:if="{{!hasMore}}">没有更多了</view>
+    <view class="msg-foot" wx:elif="{{loading}}">加载中...</view>
+  </view>
+
+  <!-- 空态 -->
+  <view class="msg-empty" wx:if="{{empty}}">
+    <view class="msg-empty-icon">📭</view>
+    <view class="msg-empty-title">暂无通知</view>
+    <view class="msg-empty-desc">任务指派、提醒与完成动态会在这里显示</view>
+    <button class="msg-empty-btn" bindtap="onGoTasks">去查看任务</button>
+  </view>
+
+</view>

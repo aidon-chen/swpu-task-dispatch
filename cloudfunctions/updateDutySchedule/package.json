@@ -1,0 +1,9 @@
+{
+  "name": "updateDutySchedule",
+  "version": "1.0.0",
+  "description": "更新值班排班矩阵云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

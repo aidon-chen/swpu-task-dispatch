@@ -43,7 +43,7 @@
     </view>
     <view class="stats-summary-item">
       <text class="stats-summary-num" style="color: #FF9800">{{summary.totalHours}}</text>
-      <text class="stats-summary-label">总工时</text>
+      <text class="stats-summary-label">总工时(h)</text>
     </view>
     <view class="stats-summary-item">
       <text class="stats-summary-num" style="color: #2196F3">{{summary.avgPerPerson}}</text>
@@ -53,15 +53,26 @@
 
   <!-- 视图切换 -->
   <view class="flex-between mb-16">
-    <view class="card-title" style="margin-bottom: 0;">详细数据</view>
+    <view class="card-title" style="margin-bottom: 0;">成员明细</view>
     <view class="stats-view-toggle" bindtap="onToggleView">
-      {{showChart ? '📋 列表' : '📊 图表'}}
+      {{showChart ? '📋 列表' : '📊 条形'}}
     </view>
   </view>
 
-  <!-- 图表视图 -->
-  <view wx:if="{{showChart && chartData}}" class="card">
-    <chart type="bar" chartData="{{chartData}}" title="任务统计图" width="{{680}}" height="{{400}}"/>
+  <!-- 条形视图（按任务量占比） -->
+  <view wx:if="{{showChart}}" class="card">
+    <block wx:for="{{detailList}}" wx:key="_id">
+      <view class="bar-row">
+        <text class="bar-name text-ellipsis">{{item.name}}</text>
+        <view class="bar-track">
+          <view class="bar-fill" style="width: {{item.barPercent}}%;"></view>
+        </view>
+        <text class="bar-value">{{item.total}}</text>
+      </view>
+    </block>
+    <view wx:if="{{detailList.length === 0}}" class="empty-state" style="padding: 60rpx 0;">
+      <text class="text">该周期暂无任务数据</text>
+    </view>
   </view>
 
   <!-- 列表视图 -->
@@ -70,10 +81,10 @@
       <block wx:for="{{detailList}}" wx:key="_id">
         <view class="stats-list-item card">
           <view class="flex-between mb-8">
-            <text class="stats-list-name">{{item.name || item.title}}</text>
-            <text class="stats-list-count">{{item.count || 0}} 次</text>
+            <text class="stats-list-name">{{item.name}}</text>
+            <text class="stats-list-count">{{item.total}} 次 · 完成 {{item.completed}}（{{item.rate}}%）</text>
           </view>
-          <view wx:if="{{item.tasks}}" class="stats-list-tasks">
+          <view wx:if="{{item.tasks.length > 0}}" class="stats-list-tasks">
             <block wx:for="{{item.tasks}}" wx:key="_id" wx:for-item="t">
               <view class="stats-task-row">
                 <text class="text-ellipsis flex-1">{{t.title}}</text>
@@ -84,10 +95,13 @@
         </view>
       </block>
     </view>
+    <view wx:if="{{detailList.length === 0}}" class="empty-state" style="padding: 60rpx 0;">
+      <text class="text">该周期暂无任务数据</text>
+    </view>
   </block>
 
   <!-- 导出按钮 -->
-  <button class="btn btn-primary btn-block mt-24" bindtap="onExport">📥 导出报表数据</button>
+  <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onExport">📥 导出报表（复制到剪贴板）</button>
 
   <view style="height: 60rpx;"></view>
 </view>

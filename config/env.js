@@ -1,75 +1,90 @@
 /**
  * 环境配置
- * 根据微信小程序的 envVersion 自动切换 dev / test / prod 环境
+ * 根据微信小程序的 envVersion 自动切换 dev / test / prod 环境。
+ *
+ * 三个环境 ID 请统一在 ./env.ids.js 中维护（单一可编辑入口）。
  *
  * 使用方式:
  *   const { getEnv } = require('../../config/env')
  *   const env = getEnv()
  *   wx.cloud.init({ env: env.cloudEnvId })
  *
- * ⚠️ 修复说明：
- * 原代码三套 cloudEnvId 都是占位符（task-dev-xxxxx 等），导致 wx.cloud.init
- * 传入了不存在的环境，报 Env Not Exists (-501000)。
- * 现统一替换为真实环境 ID：cloud1-d8gdddel1d4b1cea1
- * （后续若新建 test/prod 环境，再把对应值改成各自的环境 ID。）
+ * 本地开发期临时切换环境：
+ *   在微信开发者工具的 Storage 面板写入键 td_envOverride，值为
+ *   'dev' | 'test' | 'prod'，即可在 develop 工具里临时连到目标环境。
+ *   该覆盖仅来自本地 storage，正式包会按 envVersion 自动走对应环境，不会生效。
  */
+
+const ENV_IDS = require('./env.ids.js');
 
 /** 各环境配置 */
 const ENV_CONFIG = {
   dev: {
     name: '开发环境',
-    cloudEnvId: 'cloud1-d8gdddel1d4b1cea1',   // ← 真实环境 ID（原 task-dev-xxxxx）
+    cloudEnvId: ENV_IDS.dev,
     debug: true,
     logLevel: 'verbose'
   },
   test: {
     name: '测试环境',
-    cloudEnvId: 'cloud1-d8gdddel1d4b1cea1',   // ← 真实环境 ID（原 task-test-xxxxx）
+    cloudEnvId: ENV_IDS.test,
     debug: true,
     logLevel: 'info'
   },
   prod: {
     name: '生产环境',
-    cloudEnvId: 'cloud1-d8gdddel1d4b1cea1',   // ← 真实环境 ID（原 task-prod-xxxxx）
+    cloudEnvId: ENV_IDS.prod,
     debug: false,
     logLevel: 'error'
   }
-}
+};
+
+/** 微信 envVersion → 内部环境 key 映射 */
+const ENV_MAP = {
+  develop: 'dev',
+  trial: 'test',
+  release: 'prod'
+};
 
 /**
  * 获取当前环境配置
- * 微信 envVersion 对应关系:
- *   develop → 开发版（微信开发者工具）→ dev
- *   trial   → 体验版               → test
- *   release → 正式版               → prod
  *
- * @returns {Object} 当前环境的配置对象
+ * 解析顺序：
+ *   1) 微信 envVersion（develop / trial / release）→ 决定基础环境
+ *   2) 本地 storage 键 td_envOverride（仅开发者工具本地调试用）→ 临时覆盖
+ *
+ * @returns {Object} { name, cloudEnvId, debug, logLevel }
  */
 const getEnv = () => {
-  let envVersion = 'develop'
+  let envKey = 'dev';
 
   try {
-    const accountInfo = wx.getAccountInfoSync()
-    envVersion = accountInfo.miniProgram.envVersion
+    const accountInfo = wx.getAccountInfoSync();
+    envKey = ENV_MAP[accountInfo.miniProgram.envVersion] || 'dev';
   } catch (e) {
     // getAccountInfoSync 低版本基础库可能不支持，默认 dev
-    console.warn('[env] getAccountInfoSync 失败，使用默认 dev 环境', e)
+    console.warn('[env] getAccountInfoSync 失败，使用默认 dev 环境', e);
   }
 
-  const envMap = {
-    develop: 'dev',
-    trial: 'test',
-    release: 'prod'
+  // 开发期手动覆盖（仅本地 storage，正式包无效）
+  try {
+    const override = wx.getStorageSync('td_envOverride');
+    if (override && ENV_CONFIG[override]) {
+      envKey = override;
+      if (ENV_CONFIG[override].debug) {
+        console.log(`[env] 检测到本地覆盖 td_envOverride=${override}，使用该环境`);
+      }
+    }
+  } catch (e) {
+    // ignore
   }
 
-  const envKey = envMap[envVersion] || 'dev'
-  const config = ENV_CONFIG[envKey]
-
+  const config = ENV_CONFIG[envKey];
   if (config.debug) {
-    console.log(`[env] 当前环境: ${config.name} (${envVersion})`)
+    console.log(`[env] 当前环境: ${config.name}`);
   }
 
-  return config
-}
+  return config;
+};
 
-module.exports = { getEnv, ENV_CONFIG }
+module.exports = { getEnv, ENV_CONFIG, ENV_IDS };

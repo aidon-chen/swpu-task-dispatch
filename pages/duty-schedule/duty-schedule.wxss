@@ -169,6 +169,22 @@
 .schedule-cell-dot--busy { background: #FF9800; }
 .schedule-cell-dot--unavailable { background: #F44336; }
 
+/* 可编辑单元格（主任） */
+.schedule-matrix-cell--editable {
+  cursor: pointer;
+}
+
+.schedule-matrix-cell--editable:active {
+  background: var(--bg-color);
+}
+
+/* 矩阵编辑提示 */
+.schedule-matrix-hint {
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+}
+
 /* 列表视图 */
 .schedule-list {
   display: flex;

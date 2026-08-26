@@ -98,6 +98,21 @@ async function getTasks(params = {}) {
 }
 
 /**
+ * 获取任务模板列表（主任及以上）
+ * 返回用户可见的模板（本部门 + 跨部门，中心主任看全部）
+ * @returns {Promise<Object>} { code, data: { templates: [...] } }
+ */
+async function getTemplates() {
+  const data = {};
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+  }
+  return callCloudFunction('getTemplates', data);
+}
+
+/**
  * 更新用户状态
  * @param {Object} statusData - 状态数据
  * @returns {Promise<Object>}
@@ -144,7 +159,42 @@ async function getLocations(params = {}) {
 }
 
 /**
- * 发送通知
+ * 获取当前用户通知列表
+ * @param {Object} params - { page, pageSize }
+ * @returns {Promise<Object>} { code, data: { list, total, unreadCount, page, pageSize, hasMore } }
+ */
+async function getNotifications(params = {}) {
+  return callCloudFunction('getNotifications', params);
+}
+
+/**
+ * 标记通知已读
+ * @param {Object} params - { ids: string[], all: boolean }
+ * @returns {Promise<Object>}
+ */
+async function markRead(params = {}) {
+  return callCloudFunction('markRead', params);
+}
+
+/**
+ * 更新值班排班矩阵
+ * @param {Object} params - { userId, date, status } 或 { records: [{userId,date,status}] }
+ * status 取值：available / busy / unavailable / clear（清除）
+ * @returns {Promise<Object>}
+ */
+async function updateDutySchedule(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+    console.log('[API] 调试模式：向 updateDutySchedule 附加调试角色', user.role);
+  }
+  return callCloudFunction('updateDutySchedule', data);
+}
+
+/**
+ * 发送通知（云函数内部调用入口，前端一般不直接使用）
  * @param {Object} notificationData - 通知数据
  * @returns {Promise<Object>}
  */
@@ -153,47 +203,67 @@ async function sendNotification(notificationData) {
 }
 
 /**
- * 获取统计报表
- * TODO: 云函数 getReport 尚未实现，当前返回占位数据
- * @param {Object} params - 查询参数
+ * 生成正式密钥（仅视觉中心主任）
+ * @param {Object} params - { role, department?, count? }
  * @returns {Promise<Object>}
  */
-async function getReport(params = {}) {
-  return { code: -2, data: null, message: '统计报表功能开发中' };
-  // return callCloudFunction('getReport', params);
+async function generateKey(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+    console.log('[API] 调试模式：向 generateKey 附加调试角色', user.role);
+  }
+  return callCloudFunction('generateKey', data);
 }
 
 /**
- * 爬取新闻网
- * TODO: 云函数 crawlNews 尚未实现
- * @param {Object} params - 爬取参数
- * @returns {Promise<Object>}
+ * 获取统计报表
+ * @param {Object} params - { period, year?, month?, semester?, startDate?, endDate?, department? }
+ * @returns {Promise<Object>} { code, data: { summary, detailList } }
+ */
+async function getReport(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+  }
+  return callCloudFunction('getReport', data);
+}
+
+/**
+ * 爬取新闻网并匹配任务相关新闻
+ * @param {Object} params - { taskId, keyword, time?, sourceUrl? }
+ * @returns {Promise<Object>} { code, data: { newsList, fromCache } }
  */
 async function crawlNews(params = {}) {
-  return { code: -2, data: null, message: '新闻爬取功能开发中' };
-  // return callCloudFunction('crawlNews', params);
+  return callCloudFunction('crawlNews', params);
 }
 
 /**
  * 获取新闻缓存
- * TODO: 云函数 getNewsCache 尚未实现
  * @param {string} taskId - 任务ID
- * @returns {Promise<Object>}
+ * @returns {Promise<Object>} { code, data: { newsList, cachedAt } }
  */
 async function getNewsCache(taskId) {
-  return { code: -2, data: null, message: '新闻缓存功能开发中' };
-  // return callCloudFunction('getNewsCache', { taskId });
+  return callCloudFunction('getNewsCache', { taskId });
 }
 
 /**
- * 导出报表
- * TODO: 云函数 exportReport 尚未实现
- * @param {Object} params - 导出参数
- * @returns {Promise<Object>}
+ * 导出报表（纯文本，前端复制到剪贴板）
+ * @param {Object} params - 同 getReport
+ * @returns {Promise<Object>} { code, data: { text, scope, period } }
  */
 async function exportReport(params = {}) {
-  return { code: -2, data: null, message: '报表导出功能开发中' };
-  // return callCloudFunction('exportReport', params);
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+  }
+  return callCloudFunction('exportReport', data);
 }
 
 module.exports = {
@@ -204,11 +274,16 @@ module.exports = {
   createTask,
   updateTask,
   getTasks,
+  getTemplates,
   updateUserStatus,
   getDutySchedule,
+  updateDutySchedule,
   createLocation,
   getLocations,
+  getNotifications,
+  markRead,
   sendNotification,
+  generateKey,
   getReport,
   crawlNews,
   getNewsCache,

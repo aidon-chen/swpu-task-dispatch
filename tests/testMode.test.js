@@ -6,7 +6,7 @@
 const assert = require('assert');
 const path = require('path');
 
-const CONFIG_PATH = path.join(__dirname, '../miniprogram/config/test.js');
+const CONFIG_PATH = path.join(__dirname, '../config/test.js');
 
 // Mock wx global
 function setupWx(envVersion = 'develop') {
@@ -35,7 +35,7 @@ async function test(name, fn) {
 
 // Reset modules and load fresh testMode each test
 function loadTestMode() {
-  const testModePath = path.join(__dirname, '../miniprogram/utils/testMode.js');
+  const testModePath = path.join(__dirname, '../utils/testMode.js');
   delete require.cache[require.resolve(testModePath)];
   // 不删除 config 缓存，保证测试中对 config 的内存修改能被 testMode 读取
   return require(testModePath);

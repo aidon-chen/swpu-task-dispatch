@@ -1,0 +1,10 @@
+/**
+ * generateKey 云函数测试模式配置
+ * 默认关闭，测试时临时开启，部署到生产前务必恢复 false
+ * 开启后允许前端在 debugMode=true 时传入 debugRole 用于鉴权
+ */
+
+module.exports = {
+  /** 是否信任前端传入的调试角色 */
+  enabled: false
+};

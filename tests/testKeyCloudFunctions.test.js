@@ -89,30 +89,30 @@ async function test(name, fn) {
 
 // 设置测试模式开关：先关闭，测试需要时再开启
 function setVerifyKeyTestMode(enabled) {
-  const cfg = require('../miniprogram/cloudfunctions/verifyKey/testConfig.js');
+  const cfg = require('../cloudfunctions/verifyKey/testConfig.js');
   cfg.enabled = enabled;
 }
 
 function setGenerateTestKeyTestMode(enabled) {
-  const cfg = require('../miniprogram/cloudfunctions/generateTestKey/testConfig.js');
+  const cfg = require('../cloudfunctions/generateTestKey/testConfig.js');
   cfg.enabled = enabled;
 }
 
 function loadVerifyKey() {
-  const p = require.resolve('../miniprogram/cloudfunctions/verifyKey/index.js');
+  const p = require.resolve('../cloudfunctions/verifyKey/index.js');
   delete require.cache[p];
   return require(p);
 }
 
 function loadGenerateTestKey() {
-  const p = require.resolve('../miniprogram/cloudfunctions/generateTestKey/index.js');
+  const p = require.resolve('../cloudfunctions/generateTestKey/index.js');
   delete require.cache[p];
   return require(p);
 }
 
 // 预加载 config（确保缓存存在）
-require('../miniprogram/cloudfunctions/verifyKey/testConfig.js');
-require('../miniprogram/cloudfunctions/generateTestKey/testConfig.js');
+require('../cloudfunctions/verifyKey/testConfig.js');
+require('../cloudfunctions/generateTestKey/testConfig.js');
 
 async function runTests() {
   // TC-14: 正式密钥已使用时报错

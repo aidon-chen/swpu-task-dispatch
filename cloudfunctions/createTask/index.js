@@ -27,12 +27,41 @@ exports.main = async (event, context) => {
   const {
     title, type, startTime, endTime, location, contact,
     description, deliverables, assignedTo, priority,
-    isCrossDepartment, locationId
+    isCrossDepartment, locationId, isTemplate, templateName, fromTemplateId
   } = event;
 
+  const isTpl = !!isTemplate;
+
+  // 从模板预填（事件字段优先覆盖模板字段）
+  let base = {};
+  if (fromTemplateId && !isTpl) {
+    base = await loadTemplate(fromTemplateId);
+  }
+  const merged = {
+    title: (title || base.title || '').toString().trim(),
+    type: type || base.type || '',
+    startTime: startTime || base.startTime || '',
+    endTime: endTime || base.endTime || '',
+    location: (location || base.location || '').toString().trim(),
+    contact: (contact || base.contact || '').toString().trim(),
+    description: (description || base.description || '').toString().trim(),
+    deliverables: (deliverables || base.deliverables || '').toString().trim(),
+    priority: priority || base.priority || 'normal',
+    isCrossDepartment: isCrossDepartment !== undefined ? !!isCrossDepartment : !!(base.isCrossDepartment),
+    locationId: locationId || base.locationId || ''
+  };
+
   // 参数校验
-  if (!title || !type || !startTime || !assignedTo || assignedTo.length === 0) {
-    return Response.paramError('缺少必要参数：title, type, startTime, assignedTo');
+  if (!merged.title || !merged.type) {
+    return Response.paramError('缺少必要参数：title, type');
+  }
+  if (!isTpl) {
+    if (!merged.startTime) {
+      return Response.paramError('请选择开始时间');
+    }
+    if (!assignedTo || assignedTo.length === 0) {
+      return Response.paramError('请选择指派人员');
+    }
   }
 
   try {
@@ -69,20 +98,25 @@ exports.main = async (event, context) => {
 
     // 3. 构建任务数据
     const taskData = {
-      title: title.trim(),
-      type,
-      startTime: new Date(startTime),
-      endTime: endTime ? new Date(endTime) : null,
-      location: location || '',
-      contact: contact || '',
-      description: description || '',
-      deliverables: deliverables || '',
-      assignedTo,
+      title: merged.title,
+      type: merged.type,
+      startTime: isTpl
+        ? (merged.startTime ? new Date(merged.startTime) : null)
+        : new Date(merged.startTime),
+      endTime: merged.endTime ? new Date(merged.endTime) : null,
+      location: merged.location,
+      contact: merged.contact,
+      description: merged.description,
+      deliverables: merged.deliverables,
+      assignedTo: isTpl ? [] : (assignedTo || []),
       creatorId: user._id,
       status: 'pending',
-      priority: priority || 'normal',
-      locationId: locationId || '',
-      isCrossDepartment: !!isCrossDepartment,
+      priority: merged.priority,
+      locationId: merged.locationId,
+      isCrossDepartment: merged.isCrossDepartment,
+      isTemplate: isTpl,
+      templateName: isTpl ? (templateName || merged.title) : '',
+      ownerDepartment: user.department || '',
       semester,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -93,15 +127,18 @@ exports.main = async (event, context) => {
     const addRes = await tasksCollection.add({ data: taskData });
     const taskId = addRes._id;
 
-    // 5. 异步发送通知给指派成员（不阻塞主流程）
-    sendTaskNotifications(taskId, assignedTo, taskData).catch(err => {
-      console.error('[createTask] 发送通知失败:', err);
-    });
+    // 5. 异步发送通知给指派成员（不阻塞主流程；模板不通知）
+    if (!isTpl) {
+      sendTaskNotifications(taskId, taskData.assignedTo, taskData).catch(err => {
+        console.error('[createTask] 发送通知失败:', err);
+      });
+    }
 
     return Response.ok({
       taskId,
+      isTemplate: isTpl,
       task: { ...taskData, _id: taskId }
-    }, '任务创建成功');
+    }, isTpl ? '模板已保存' : '任务创建成功');
   } catch (err) {
     console.error('[createTask] 错误:', err);
     return Response.paramError(err.message || '创建任务失败');
@@ -128,6 +165,36 @@ async function sendTaskNotifications(taskId, userIds, taskData) {
     });
   } catch (err) {
     console.error('[createTask] 通知发送失败:', err);
+  }
+}
+
+/**
+ * 加载模板字段，用于"从模板创建"时预填表单
+ * @param {string} templateId - 模板任务ID
+ * @returns {Object} 模板字段；找不到或非模板时返回 {}
+ */
+async function loadTemplate(templateId) {
+  if (!templateId) return {};
+  try {
+    const { data } = await db.collection('tasks').doc(templateId).get();
+    const t = Array.isArray(data) ? data[0] : data;
+    if (!t || !t.isTemplate) return {};
+    return {
+      title: t.title,
+      type: t.type,
+      startTime: t.startTime ? new Date(t.startTime) : '',
+      endTime: t.endTime ? new Date(t.endTime) : '',
+      location: t.location,
+      contact: t.contact,
+      description: t.description,
+      deliverables: t.deliverables,
+      priority: t.priority || 'normal',
+      isCrossDepartment: !!t.isCrossDepartment,
+      locationId: t.locationId || ''
+    };
+  } catch (e) {
+    console.error('[createTask] 加载模板失败:', e);
+    return {};
   }
 }
 

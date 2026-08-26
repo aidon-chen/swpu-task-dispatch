@@ -1,2 +1,80 @@
-<!-- 密钥生成页面 — T02 阶段实现 -->
-<view class="placeholder"><text>密钥生成功能即将上线</text></view>
+<!-- 密钥生成页面 -->
+<view class="container">
+  <view class="page-tip">
+    生成的一次性密钥将分发给成员。密钥使用后立即失效，请妥善保管。
+  </view>
+
+  <!-- 角色选择 -->
+  <view class="card">
+    <view class="card-title">选择角色</view>
+    <view class="option-group">
+      <view
+        wx:for="{{roleOptions}}"
+        wx:key="value"
+        class="option-pill {{selectedRole === item.value ? 'option-pill--active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onSelectRole"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- 部门选择（成员角色不显示） -->
+  <view class="card" wx:if="{{selectedRole !== 'member'}}">
+    <view class="card-title">选择部门</view>
+    <view class="option-group">
+      <view
+        wx:for="{{departmentOptions}}"
+        wx:key="value"
+        class="option-pill {{selectedDepartment === item.value ? 'option-pill--active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onSelectDepartment"
+      >{{item.label}}</view>
+    </view>
+  </view>
+
+  <!-- 数量 -->
+  <view class="card">
+    <view class="card-title">生成数量</view>
+    <view class="count-row">
+      <view class="count-btn" bindtap="onCountInput" data-value="-1">−</view>
+      <input
+        class="count-input"
+        type="number"
+        value="{{count}}"
+        bindinput="onCountInput"
+      />
+      <view class="count-btn" bindtap="onCountInput" data-value="1">＋</view>
+    </view>
+    <text class="count-hint">单次最多生成 10 个</text>
+  </view>
+
+  <!-- 生成按钮 -->
+  <button class="btn btn-primary btn-block" loading="{{loading}}" bindtap="onGenerate">
+    生成密钥
+  </button>
+
+  <!-- 已生成密钥列表 -->
+  <view class="card mt-24" wx:if="{{generatedKeys.length > 0}}">
+    <view class="flex-between">
+      <view class="card-title" style="margin-bottom:0;">已生成密钥</view>
+      <text class="link-clear" bindtap="onClear">清空</text>
+    </view>
+    <view
+      wx:for="{{generatedKeys}}"
+      wx:key="key"
+      class="key-item"
+      data-key="{{item.key}}"
+      bindtap="onCopyKey"
+    >
+      <view class="flex-column">
+        <text class="key-value">{{item.key}}</text>
+        <text class="key-meta">
+          {{item.role === 'photo_director' ? '摄影部主任' : (item.role === 'video_director' ? '视频部主任' : '普通成员')}}
+          <text wx:if="{{item.department}}"> · {{item.department === 'photography' ? '摄影部' : '视频部'}}</text>
+        </text>
+      </view>
+      <text class="key-copy">复制</text>
+    </view>
+    <text class="count-hint">点击任意密钥可复制到剪贴板</text>
+  </view>
+</view>

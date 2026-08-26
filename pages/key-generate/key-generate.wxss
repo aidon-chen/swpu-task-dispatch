@@ -1,1 +1,117 @@
-.placeholder { padding: 80rpx; text-align: center; color: #999; }
+/**
+ * 密钥生成页面样式
+ */
+
+.page-tip {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  background: rgba(25, 118, 210, 0.08);
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+  line-height: 1.5;
+}
+
+/* 角色/部门选择胶囊 */
+.option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.option-pill {
+  padding: 16rpx 36rpx;
+  border-radius: 999rpx;
+  background: var(--bg-color);
+  color: var(--text-secondary);
+  font-size: 28rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.option-pill--active {
+  background: rgba(25, 118, 210, 0.12);
+  color: var(--primary);
+  border-color: var(--primary);
+  font-weight: 600;
+}
+
+/* 数量选择 */
+.count-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.count-btn {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 12rpx;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  font-size: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.count-btn:active {
+  background: var(--border-color);
+}
+
+.count-input {
+  width: 120rpx;
+  height: 72rpx;
+  text-align: center;
+  font-size: 32rpx;
+  background: var(--bg-color);
+  border-radius: 12rpx;
+}
+
+.count-hint {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 22rpx;
+  color: var(--text-hint);
+}
+
+/* 密钥列表 */
+.link-clear {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid var(--bg-color);
+}
+
+.key-item:last-of-type {
+  border-bottom: none;
+}
+
+.key-value {
+  font-size: 34rpx;
+  font-weight: 700;
+  letter-spacing: 4rpx;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+}
+
+.key-meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+}
+
+.key-copy {
+  font-size: 26rpx;
+  color: var(--primary);
+  padding: 8rpx 20rpx;
+  border: 2rpx solid var(--primary);
+  border-radius: 999rpx;
+}

@@ -10,7 +10,28 @@ const nodePath = process.argv[0];
 const testFiles = [
   'testMode.test.js',
   'debugLogin.test.js',
-  'testKeyCloudFunctions.test.js'
+  'testKeyCloudFunctions.test.js',
+  'createTask.test.js',
+  'getTemplates.test.js',
+  'sendNotification.test.js',
+  'scheduleNotify.test.js',
+  'getTasks.test.js',
+  'updateTask.test.js',
+  'login.test.js',
+  'initDatabase.test.js',
+  'verifyKey.test.js',
+  'createLocation.test.js',
+  'getLocations.test.js',
+  'getDutySchedule.test.js',
+  'updateDutySchedule.test.js',
+  'updateUserStatus.test.js',
+  'getNotifications.test.js',
+  'markRead.test.js',
+  'generateKey.test.js',
+  'crawlNews.test.js',
+  'getNewsCache.test.js',
+  'getReport.test.js',
+  'exportReport.test.js'
 ];
 
 let hasFailure = false;

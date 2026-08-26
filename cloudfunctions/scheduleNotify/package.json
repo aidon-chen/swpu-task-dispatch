@@ -1,0 +1,9 @@
+{
+  "name": "scheduleNotify",
+  "version": "1.0.0",
+  "description": "定时任务扫描：任务前提醒与过期自动完结",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

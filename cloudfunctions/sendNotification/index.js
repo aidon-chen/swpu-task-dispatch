@@ -1,135 +1,94 @@
 /**
- * 发送通知云函数
- * 使用微信订阅消息，向指定用户发送任务相关通知
- * 支持：任务指派、开始前提醒、任务取消
+ * 发送通知云函数（小程序内通知）
+ *
+ * 方案：向 notifications 集合写入通知记录，由前端「消息中心」主动展示，
+ *       不再依赖微信订阅消息（无需用户授权、触达可靠）。
+ * 调用方：createTask / updateTask / scheduleNotify（后续模块），均使用同一事件结构。
+ *
+ * 事件入参：
+ *   type      : task_assigned | task_cancelled | reminder | task_completed
+ *   taskId    : 关联任务 ID（可选，用于点击跳转）
+ *   userIds   : 接收者用户 _id 数组（与 tasks.assignedTo 一致）
+ *   taskInfo  : { title, startTime, location }（用于拼接文案，可选）
+ *   content   : 自定义文案（可选，优先级高于自动拼接）
  */
 
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
+
 const db = cloud.database();
 const _ = db.command;
 
 const Response = {
-  ok: (data, msg = '成功') => ({ code: 0, data, message: msg }),
-  paramError: (msg = '参数错误') => ({ code: 1, data: null, message: msg })
+  ok: (data, message = '成功') => ({ code: 0, data, message }),
+  paramError: (message = '参数错误') => ({ code: 1, data: null, message })
 };
 
-/**
- * 通知模板ID配置
- * ⚠️ 需在微信公众平台 (mp.weixin.qq.com) → 功能 → 订阅消息 中申请
- *    申请通过后将真实模板ID替换以下占位符
- */
-const TEMPLATE_IDS = {
-  /** 任务指派通知 - 申请人收到新任务时推送 */
-  task_assigned: 'your-template-id-task-assigned',     // TODO: 替换为真实模板ID
-  /** 任务提醒通知 - 任务开始前2小时推送 */
-  task_reminder: 'your-template-id-task-reminder',     // TODO: 替换为真实模板ID
-  /** 任务取消通知 - 任务被主任取消时推送 */
-  task_cancelled: 'your-template-id-task-cancelled'    // TODO: 替换为真实模板ID
-};
+/** 通知文案模板（与系统设计 §8.6 一致） */
+function buildContent(type, taskInfo = {}) {
+  const title = (taskInfo.title || '任务').replace(/\n/g, ' ');
+  switch (type) {
+    case 'task_assigned':
+      return `你收到新任务：${title}`;
+    case 'task_cancelled':
+      return `任务已取消：${title}`;
+    case 'reminder':
+      return `任务即将开始：${title}（${formatTime(taskInfo.startTime)}）`;
+    case 'task_completed':
+      return `任务已自动完成：${title}`;
+    default:
+      return `你有新的通知：${title}`;
+  }
+}
+
+function formatTime(date) {
+  if (!date) return '即将开始';
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '即将开始';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 exports.main = async (event, context) => {
-  const { type, taskId, userIds, taskInfo } = event;
+  const { type, taskId, userIds, taskInfo = {}, content } = event;
 
-  if (!type || !taskId || !userIds || userIds.length === 0) {
-    return Response.paramError('缺少必要参数');
+  if (!type || !userIds || (Array.isArray(userIds) ? userIds.length === 0 : !userIds)) {
+    return Response.paramError('缺少必要参数（type / userIds）');
   }
 
+  // 归一化为数组
+  const targets = Array.isArray(userIds) ? userIds : [userIds];
+
   try {
-    const usersCollection = db.collection('users');
+    const notificationsCollection = db.collection('notifications');
+    const text = (content && String(content).trim()) || buildContent(type, taskInfo);
 
-    // 获取用户openid列表
-    const { data: users } = await usersCollection
-      .where({ _id: _.in(userIds) })
-      .field({ openid: true, name: true })
-      .get();
+    // 逐接收者写入，单条失败不影响其他（如 userId 非法/已删除）
+    const records = targets.map((userId) => ({
+      userId,
+      taskId: taskId || '',
+      type,
+      content: text,
+      isRead: false,
+      createdAt: db.serverDate()
+    }));
 
-    if (users.length === 0) {
-      return Response.ok({ sent: 0 }, '无有效用户');
-    }
-
-    const openids = users.map(u => u.openid);
-
-    // 根据类型构建消息内容
-    let templateId;
-    let messageData;
-
-    switch (type) {
-      case 'task_assigned':
-        templateId = TEMPLATE_IDS.task_assigned;
-        messageData = buildAssignedMessage(taskInfo);
-        break;
-      case 'task_reminder':
-        templateId = TEMPLATE_IDS.task_reminder;
-        messageData = buildReminderMessage(taskInfo);
-        break;
-      case 'task_cancelled':
-        templateId = TEMPLATE_IDS.task_cancelled;
-        messageData = buildCancelledMessage(taskInfo);
-        break;
-      default:
-        return Response.paramError('未知通知类型');
-    }
-
-    // 发送订阅消息
-    let successCount = 0;
-    for (const openid of openids) {
+    let written = 0;
+    for (const rec of records) {
       try {
-        await cloud.openapi.subscribeMessage.send({
-          touser: openid,
-          templateId,
-          data: messageData,
-          page: `/pages/task-detail/task-detail?id=${taskId}`,
-          miniprogramState: 'formal'
-        });
-        successCount++;
+        await notificationsCollection.add({ data: rec });
+        written++;
       } catch (err) {
-        // 用户未订阅或模板不存在
-        console.error(`[通知] 发送给 ${openid} 失败:`, err.errMsg || err.message);
+        console.error(`[sendNotification] 写入 userId=${rec.userId} 失败:`, err.errMsg || err.message);
       }
     }
 
-    return Response.ok({ sent: successCount, total: openids.length }, `已发送 ${successCount}/${openids.length} 条通知`);
+    return Response.ok(
+      { written, total: records.length },
+      `已写入 ${written}/${records.length} 条通知`
+    );
   } catch (err) {
     console.error('[sendNotification] 错误:', err);
     return Response.paramError(err.message || '发送通知失败');
   }
 };
-
-/** 构建任务指派消息 */
-function buildAssignedMessage(taskInfo) {
-  return {
-    thing1: { value: (taskInfo.title || '新任务').substring(0, 20) },
-    time2: { value: formatForTemplate(taskInfo.startTime) },
-    thing3: { value: (taskInfo.location || '待定').substring(0, 20) }
-  };
-}
-
-/** 构建任务提醒消息 */
-function buildReminderMessage(taskInfo) {
-  return {
-    thing1: { value: (taskInfo.title || '任务').substring(0, 20) },
-    time2: { value: formatForTemplate(taskInfo.startTime) },
-    thing3: { value: '任务将在2小时后开始，请做好准备' }
-  };
-}
-
-/** 构建任务取消消息 */
-function buildCancelledMessage(taskInfo) {
-  return {
-    thing1: { value: (taskInfo.title || '任务').substring(0, 20) },
-    phrase2: { value: '已取消' },
-    thing3: { value: '任务已被主任取消，如有疑问请联系主任' }
-  };
-}
-
-/** 格式化时间为模板格式 */
-function formatForTemplate(date) {
-  if (!date) return '待定';
-  const d = new Date(date);
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hours = String(d.getHours()).padStart(2, '0');
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  return `${month}月${day}日 ${hours}:${minutes}`;
-}

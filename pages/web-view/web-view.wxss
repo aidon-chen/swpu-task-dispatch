@@ -1,0 +1,7 @@
+/**
+ * WebView 承载页样式
+ */
+.webview-wrap {
+  width: 100%;
+  height: 100vh;
+}

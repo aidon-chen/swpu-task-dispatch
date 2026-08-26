@@ -113,9 +113,9 @@ exports.main = async (event, context) => {
       endDate: statusUpdatedMap[m._id] ? statusUpdatedMap[m._id].endDate : null
     }));
 
-    // 6. 构建可用性矩阵（如果指定了年月）
+    // 6. 构建可用性矩阵（从 duty_schedule 集合读取指定年月的排班）
     let availability = {};
-    let summary = {
+    const summary = {
       available: 0,
       busy: 0,
       unavailable: 0,
@@ -128,6 +128,28 @@ exports.main = async (event, context) => {
       else if (s === 'busy') summary.busy++;
       else summary.unavailable++;
     });
+
+    // 读取 duty_schedule 矩阵（按 userId × date）
+    if (year && month && memberIds.length > 0) {
+      try {
+        const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+        const { data: duty } = await db.collection('duty_schedule')
+          .where({
+            userId: _.in(memberIds),
+            date: _.gte(startDate).and(_.lte(endDate))
+          })
+          .limit(1000)
+          .get();
+        duty.forEach(d => {
+          if (!availability[d.userId]) availability[d.userId] = {};
+          availability[d.userId][d.date] = d.status;
+        });
+      } catch (e) {
+        console.error('[getDutySchedule] 读取 duty_schedule 失败:', e.message);
+      }
+    }
 
     // 如果只查看可用成员
     let resultMembers = membersWithStatus;

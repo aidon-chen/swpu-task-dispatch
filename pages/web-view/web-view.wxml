@@ -1,0 +1,8 @@
+<!-- WebView 承载页 -->
+<view class="webview-wrap">
+  <web-view wx:if="{{url}}" src="{{url}}"></web-view>
+  <view wx:else class="empty-state">
+    <view class="icon">🔗</view>
+    <view class="text">缺少可打开的链接</view>
+  </view>
+</view>

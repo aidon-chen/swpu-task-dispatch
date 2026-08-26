@@ -36,13 +36,13 @@ let pageConfig = null;
 global.Page = (cfg) => { pageConfig = cfg; };
 
 // Enable test mode before loading login page
-const config = require('../miniprogram/config/test.js');
+const config = require('../config/test.js');
 config.enabled = true;
 config.features.debugLogin = true;
 config.features.testKeyMultiUse = false;
 config.allowRuntimeOverride = true;
 
-require('../miniprogram/pages/login/login.js');
+require('../pages/login/login.js');
 
 async function test(name, fn) {
   try {

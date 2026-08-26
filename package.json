@@ -6,7 +6,13 @@
   "dependencies": {
     "tdesign-miniprogram": "^1.5.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cheerio": "^1.2.0"
+  },
+  "scripts": {
+    "deploy": "node scripts/deploy-functions.js",
+    "deploy:dry": "node scripts/deploy-functions.js --dry-run"
+  },
   "author": "",
   "license": "ISC"
 }

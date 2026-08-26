@@ -9,6 +9,7 @@
 const api = require('../../utils/api.js');
 const auth = require('../../utils/auth.js');
 const dateUtil = require('../../utils/date.js');
+const notification = require('../../utils/notification.js');
 
 Page({
   data: {
@@ -52,6 +53,8 @@ Page({
     // 每次显示页面时刷新数据
     this.loadUserInfo();
     this.loadTasks(true);
+    // 同步「我的」tab 未读红点
+    notification.refreshUnreadBadge();
   },
 
   /**

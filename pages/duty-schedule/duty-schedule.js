@@ -34,6 +34,8 @@ Page({
     selectedMemberId: '',
     /** 成员可用性数据 { memberId: { date: status } } */
     availability: {},
+    /** 预计算的可视化矩阵（模板友好）：[{ memberId, name, department, editable, cells:[{date,status}] }] */
+    matrixRows: [],
     /** 每周固定时间段设置 */
     weeklySchedule: [
       { day: 1, label: '周一', startTime: '', endTime: '', enabled: false },
@@ -89,10 +91,14 @@ Page({
       });
 
       if (res.code === 0 && res.data) {
+        const members = res.data.members || [];
+        const availability = res.data.availability || {};
+        const matrixRows = this.computeMatrixRows(members, availability);
         this.setData({
-          members: res.data.members || [],
-          availability: res.data.availability || {},
-          statusSummary: res.data.summary || this.data.statusSummary
+          members,
+          availability,
+          statusSummary: res.data.summary || this.data.statusSummary,
+          matrixRows
         });
       }
     } catch (err) {
@@ -242,12 +248,80 @@ Page({
   },
 
   /**
-   * 获取某个成员在某个日期的状态
+   * 由成员列表 + availability 预计算模板可渲染的矩阵
+   * @param {Array} members 成员数组
+   * @param {Object} availability { memberId: { date: status } }
+   * @returns {Array} [{ memberId, name, department, editable, cells:[{date,status}] }]
    */
-  getMemberDateStatus(memberId, date) {
-    const availability = this.data.availability;
-    if (!availability[memberId]) return null;
-    return availability[memberId][date] || null;
+  computeMatrixRows(members, availability) {
+    const nonEmptyDays = this.data.calendarDays.filter(d => !d.empty);
+    const currentUserId = this.data.currentUser ? this.data.currentUser._id : '';
+    const dept = this.data.department;
+    const isCenter = this.data.isCenterDirector;
+    const isDir = this.data.isDirector;
+
+    return members.map(m => {
+      // 本人可编辑自己；主任可编辑本部门；中心主任可编辑全部
+      const editable = isDir && (m._id === currentUserId || isCenter || m.department === dept);
+      const cells = nonEmptyDays.map(d => ({
+        date: d.date,
+        status: (availability[m._id] && availability[m._id][d.date]) || null
+      }));
+      return {
+        memberId: m._id,
+        name: m.name,
+        department: m.department,
+        editable,
+        cells
+      };
+    });
+  },
+
+  /**
+   * 本地乐观更新某个单元格状态（不触发整页刷新）
+   */
+  applyCellStatus(memberId, date, status) {
+    const availability = { ...this.data.availability };
+    if (!availability[memberId]) availability[memberId] = {};
+    if (status) {
+      availability[memberId][date] = status;
+    } else {
+      delete availability[memberId][date];
+    }
+    const matrixRows = this.computeMatrixRows(this.data.members, availability);
+    this.setData({ availability, matrixRows });
+  },
+
+  /**
+   * 点击矩阵单元格：主任可设置当天状态
+   */
+  async onCellTap(e) {
+    const { memberId, date, status } = e.currentTarget.dataset;
+    const row = this.data.matrixRows.find(r => r.memberId === memberId);
+    if (!row || !row.editable) return;
+
+    const STATUS_LABELS = ['可用', '忙碌', '不可用', '清除'];
+    const STATUS_VALUES = ['available', 'busy', 'unavailable', 'clear'];
+
+    wx.showActionSheet({
+      itemList: STATUS_LABELS,
+      success: async (res) => {
+        const newStatus = STATUS_VALUES[res.tapIndex];
+        // 乐观更新
+        this.applyCellStatus(memberId, date, newStatus === 'clear' ? null : newStatus);
+
+        try {
+          const apiRes = await api.updateDutySchedule({ userId: memberId, date, status: newStatus });
+          if (apiRes.code !== 0) {
+            wx.showToast({ title: apiRes.message || '保存失败', icon: 'none' });
+            this.loadData(); // 失败回滚：重新拉取
+          }
+        } catch (err) {
+          wx.showToast({ title: '网络错误，已恢复', icon: 'none' });
+          this.loadData();
+        }
+      }
+    });
   },
 
   /**

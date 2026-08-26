@@ -1,0 +1,9 @@
+{
+  "name": "getNewsCache",
+  "version": "1.0.0",
+  "description": "获取新闻匹配缓存云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

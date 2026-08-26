@@ -1,174 +1,39 @@
 /**
- * 小程序内通知工具
+ * 通知工具：维护 TabBar 未读红点
  *
- * 采用 notifications 集合 + TabBar 红点方案，无需微信订阅消息授权。
- *
- * 通知触发时机:
- *   创建任务 → task_assigned
- *   取消任务 → task_cancelled
- *   定时扫描 → reminder (任务开始前2h)
- *   自动完结 → task_completed
- *
- * 使用:
- *   const notify = require('../../utils/notification')
- *   await notify.send({ userId, type: 'task_assigned', taskId, content })
+ * 说明：当前 tabBar 仅有「任务 / 值班表 / 统计 / 我的」四项，没有独立的「消息」tab。
+ *       因此未读红点挂在「我的」(profile) tab 上（tabBar index = 3），
+ *       由 profile 页的「消息中心」入口承载跳转。后续若新增消息 tab，改这里即可。
  */
 
-/** 通知类型常量 */
-const NOTIFY_TYPE = {
-  TASK_ASSIGNED:  'task_assigned',
-  TASK_CANCELLED: 'task_cancelled',
-  REMINDER:       'reminder',
-  TASK_COMPLETED: 'task_completed'
-}
+const api = require('./api.js');
 
-/** 通知类型中文映射 */
-const NOTIFY_LABEL = {
-  task_assigned:  '新任务',
-  task_cancelled: '任务取消',
-  reminder:       '任务提醒',
-  task_completed: '任务完成'
-}
+/** profile 在 tabBar 中的索引 */
+const PROFILE_TAB_INDEX = 3;
 
 /**
- * 写入一条通知到 notifications 集合
- * 通常在云函数中调用，前端仅在需要本地补充通知时使用
- *
- * @param {Object} opts
- * @param {string} opts.userId    - 接收者 userId
- * @param {string} opts.taskId    - 关联任务ID（可选）
- * @param {string} opts.type      - 通知类型，取值见 NOTIFY_TYPE
- * @param {string} opts.content   - 通知文本
- * @returns {Promise<Object>}
+ * 拉取未读数并刷新「我的」tab 红点
+ * @returns {Promise<number>} 未读数
  */
-const send = async ({ userId, taskId, type, content }) => {
-  const db = wx.cloud.database()
-  const now = new Date()
-
-  return db.collection('notifications').add({
-    data: {
-      userId,
-      taskId: taskId || '',
-      type,
-      content: content || NOTIFY_LABEL[type] || '',
-      isRead: false,
-      createdAt: now
-    }
-  })
-}
-
-/**
- * 获取当前用户未读通知数量
- * @param {string} userId
- * @returns {Promise<number>}
- */
-const getUnreadCount = async (userId) => {
-  if (!userId) return 0
-
+async function refreshUnreadBadge() {
   try {
-    const db = wx.cloud.database()
-    const res = await db.collection('notifications')
-      .where({ userId, isRead: false })
-      .count()
-    return res.total || 0
-  } catch (e) {
-    console.error('[通知] 获取未读数失败:', e)
-    return 0
+    const res = await api.getNotifications({ page: 1, pageSize: 1 });
+    const count = (res && res.code === 0 && res.data) ? res.data.unreadCount || 0 : 0;
+
+    if (count > 0) {
+      wx.setTabBarBadge({
+        index: PROFILE_TAB_INDEX,
+        text: count > 99 ? '99+' : String(count)
+      });
+    } else {
+      wx.removeTabBarBadge({ index: PROFILE_TAB_INDEX });
+    }
+    return count;
+  } catch (err) {
+    // 红点失败不应阻断页面
+    console.error('[notification] 刷新红点失败:', err);
+    return 0;
   }
 }
 
-/**
- * 获取通知列表（分页）
- * @param {Object} opts
- * @param {string} opts.userId
- * @param {number} opts.page     - 页码，从1开始
- * @param {number} opts.pageSize - 每页数量，默认20
- * @returns {Promise<{list: Array, hasMore: boolean}>}
- */
-const getList = async ({ userId, page = 1, pageSize = 20 }) => {
-  const db = wx.cloud.database()
-  const skip = (page - 1) * pageSize
-
-  const res = await db.collection('notifications')
-    .where({ userId })
-    .orderBy('createdAt', 'desc')
-    .skip(skip)
-    .limit(pageSize + 1) // 多取一条判断是否有下一页
-    .get()
-
-  const hasMore = res.data.length > pageSize
-  const list = hasMore ? res.data.slice(0, pageSize) : res.data
-
-  return { list, hasMore }
-}
-
-/**
- * 批量标记通知为已读
- * @param {Array<string>} ids - 通知 _id 列表
- * @returns {Promise<void>}
- */
-const markAsRead = async (ids) => {
-  if (!ids || ids.length === 0) return
-
-  const db = wx.cloud.database()
-  const _ = db.command
-
-  // 云开发一次只能更新一条，逐条更新
-  const tasks = ids.map(id =>
-    db.collection('notifications').doc(id).update({
-      data: { isRead: true }
-    })
-  )
-  await Promise.all(tasks)
-}
-
-/**
- * 标记所有通知为已读
- * @param {string} userId
- * @returns {Promise<number>} 更新的条数
- */
-const markAllRead = async (userId) => {
-  const db = wx.cloud.database()
-  const _ = db.command
-
-  // 先查出所有未读通知ID
-  const unreadRes = await db.collection('notifications')
-    .where({ userId, isRead: false })
-    .field({ _id: true })
-    .get()
-
-  if (unreadRes.data.length === 0) return 0
-
-  const tasks = unreadRes.data.map(item =>
-    db.collection('notifications').doc(item._id).update({
-      data: { isRead: true }
-    })
-  )
-  await Promise.all(tasks)
-  return unreadRes.data.length
-}
-
-/**
- * 更新 TabBar 红点
- * 在 index 页 onShow 时调用
- * @param {number} count - 未读数量
- */
-const updateTabBadge = (count) => {
-  if (count > 0) {
-    const text = count > 99 ? '99+' : String(count)
-    wx.setTabBarBadge({ index: 0, text })
-  } else {
-    wx.removeTabBarBadge({ index: 0 })
-  }
-}
-
-module.exports = {
-  NOTIFY_TYPE,
-  NOTIFY_LABEL,
-  send,
-  getUnreadCount,
-  getList,
-  markAsRead,
-  markAllRead,
-  updateTabBadge
-}
+module.exports = { refreshUnreadBadge, PROFILE_TAB_INDEX };

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches: [main]
+
+jobs:
+  pr-title:
+    if: github.event_name == 'pull_request'
+    name: PR 标题规范检查
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 校验 PR 标题符合 Conventional Commits
+        run: |
+          title="${{ github.event.pull_request.title }}"
+          pattern='^(feat|fix|chore|docs|refactor|test|build|ci|perf|style|revert)(\(.+\))?!?: .+'
+          if [[ ! "$title" =~ $pattern ]]; then
+            echo "::error::PR 标题不符合 Conventional Commits 规范：'$title'"
+            echo "正确示例：feat(login): 支持调试登录"
+            exit 1
+          fi
+          echo "✅ PR 标题符合规范：$title"
+
+  syntax:
+    name: JS 语法检查（tests）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: node --check 测试文件
+        run: |
+          fail=0
+          for f in $(find tests -name '*.js'); do
+            node --check "$f" || fail=1
+          done
+          exit $fail

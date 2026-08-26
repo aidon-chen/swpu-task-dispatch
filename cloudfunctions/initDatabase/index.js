@@ -16,7 +16,9 @@ const REQUIRED_COLLECTIONS = [
   'tasks',        // 任务
   'user_status',  // 用户状态（出勤/请假等）
   'locations',    // 拍摄机位
-  'notifications' // 通知记录
+  'notifications',// 通知记录
+  'duty_schedule',// 值班排班矩阵（按 userId × date）
+  'news_cache'    // 新闻匹配缓存（按 taskId）
 ];
 
 exports.main = async (event, context) => {

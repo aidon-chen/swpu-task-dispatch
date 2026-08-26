@@ -59,21 +59,27 @@
             class="schedule-matrix-date-col"
           >{{item.day}}</view>
         </view>
-        <view wx:for="{{members}}" wx:key="_id" class="schedule-matrix-row">
+        <view wx:for="{{matrixRows}}" wx:key="memberId" class="schedule-matrix-row">
           <view class="schedule-matrix-name-col text-ellipsis">{{item.name}}</view>
           <view
-            wx:for="{{calendarDays}}"
-            wx:for-item="day"
-            wx:key="index"
-            wx:if="{{!day.empty}}"
-            class="schedule-matrix-cell"
+            wx:for="{{item.cells}}"
+            wx:for-item="cell"
+            wx:key="date"
+            class="schedule-matrix-cell {{item.editable ? 'schedule-matrix-cell--editable' : ''}}"
+            data-member-id="{{item.memberId}}"
+            data-date="{{cell.date}}"
+            data-status="{{cell.status}}"
+            bindtap="{{item.editable ? 'onCellTap' : ''}}"
           >
-            <view class="schedule-cell-dot schedule-cell-dot--available"></view>
+            <view wx:if="{{cell.status}}" class="schedule-cell-dot schedule-cell-dot--{{cell.status}}"></view>
           </view>
         </view>
       </scroll-view>
       <view wx:if="{{members.length === 0}}" class="empty-state" style="padding: 40rpx 0;">
         <text class="text">暂无成员数据</text>
+      </view>
+      <view wx:if="{{isDirector}}" class="schedule-matrix-hint">
+        点击单元格可设置状态（绿=可用 / 橙=忙碌 / 红=不可用）
       </view>
     </view>
   </block>

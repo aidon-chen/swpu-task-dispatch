@@ -147,6 +147,9 @@ async function getTaskDetail(taskId, user, includeMembers) {
 function buildQuery(event, user, userLevel) {
   const query = {};
 
+  // 默认排除任务模板（模板通过 getTemplates 单独获取）
+  query.isTemplate = _.neq(true);
+
   // 任务状态筛选
   if (event.status) {
     query.status = event.status;
