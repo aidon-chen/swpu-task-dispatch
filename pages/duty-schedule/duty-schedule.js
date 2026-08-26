@@ -106,6 +106,13 @@ Page({
     this.loadDay(todayStr);
   },
 
+  onShow() {
+    // 同步自定义 tabBar 选中态
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 1 });
+    }
+  },
+
   // ===== 本周值班（PRD 值班表导入）=====
 
   /**

@@ -90,6 +90,10 @@ Page({
     this.loadTasks(true);
     // 同步「我的」tab 未读红点
     notification.refreshUnreadBadge();
+    // 同步自定义 tabBar 选中态
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({ selected: 0 });
+    }
   },
 
   /**

@@ -1,0 +1,18 @@
+<!-- 自定义 tabBar -->
+<view class="tab-bar">
+  <view
+    class="tab-bar-item"
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    data-path="{{item.pagePath}}"
+    data-index="{{index}}"
+    bindtap="switchTab"
+  >
+    <image
+      class="tab-bar-icon"
+      src="{{selected === index ? item.selectedIconPath : item.iconPath}}"
+      mode="aspectFit"
+    />
+    <text class="tab-bar-text" style="color: {{selected === index ? '#1976D2' : '#757575'}};">{{item.text}}</text>
+  </view>
+</view>
