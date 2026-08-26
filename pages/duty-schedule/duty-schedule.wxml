@@ -1,29 +1,38 @@
 <!-- 值班表页面 -->
 <view class="container">
-  <!-- 本周值班安排（PRD 值班表导入） -->
+  <!-- 本周值班安排（PRD 值班表导入，可折叠） -->
   <view class="card mt-16">
-    <view class="card-title">📅 本周值班安排</view>
-    <block wx:for="{{dutyByWeekday}}" wx:key="weekday" wx:for-item="day">
-      <view class="duty-day">
-        <view class="duty-day-title">{{day.label}}</view>
-        <view wx:for="{{day.rows}}" wx:key="slot" wx:for-item="row" class="duty-row">
-          <text class="duty-slot">{{row.slot}}</text>
-          <view class="duty-cells">
-            <view wx:for="{{row.cells}}" wx:key="team" wx:for-item="cell" class="duty-cell">
-              <text class="duty-team">{{cell.team}}：</text>
-              <text class="duty-names">{{cell.names}}</text>
+    <view class="duty-collapse-header" bindtap="onToggleDuty">
+      <view class="card-title" style="margin-bottom: 0;"><t-icon class="icon-card-title" name="calendar" size="36rpx" color="#1976D2"/>本周值班安排</view>
+      <view class="duty-collapse-right">
+        <text wx:if="{{!dutyCollapsed && dutyByWeekday.length > 0}}" class="duty-collapse-summary">{{dutyByWeekday.length}} 天</text>
+        <text class="duty-collapse-arrow">{{dutyCollapsed ? '▸' : '▾'}}</text>
+      </view>
+    </view>
+
+    <block wx:if="{{!dutyCollapsed || dutyByWeekday.length === 0}}">
+      <block wx:for="{{dutyByWeekday}}" wx:key="weekday" wx:for-item="day">
+        <view class="duty-day">
+          <view class="duty-day-title">{{day.label}}</view>
+          <view wx:for="{{day.rows}}" wx:key="slot" wx:for-item="row" class="duty-row">
+            <text class="duty-slot">{{row.slot}}</text>
+            <view class="duty-cells">
+              <view wx:for="{{row.cells}}" wx:key="team" wx:for-item="cell" class="duty-cell">
+                <text class="duty-team">{{cell.team}}：</text>
+                <text class="duty-names">{{cell.names}}</text>
+              </view>
             </view>
           </view>
         </view>
+      </block>
+      <view wx:if="{{dutyByWeekday.length === 0 && !dutyLoading}}" class="empty-state" style="padding: 40rpx 0;">
+        <text class="text">{{isCenterDirector ? '暂无值班数据，可点击下方导入' : '暂无值班数据'}}</text>
+      </view>
+      <view wx:if="{{isCenterDirector}}" class="duty-actions">
+        <button class="btn btn-primary btn-block mb-16" loading="{{importing}}" bindtap="onImportDuty"><t-icon class="icon-inline" name="import" size="32rpx"/>导入值班表</button>
+        <button wx:if="{{dutyByWeekday.length > 0}}" class="btn btn-danger btn-block" loading="{{cleaning}}" bindtap="onCleanDuty">清空值班记录</button>
       </view>
     </block>
-    <view wx:if="{{dutyByWeekday.length === 0 && !dutyLoading}}" class="empty-state" style="padding: 40rpx 0;">
-      <text class="text">{{isCenterDirector ? '暂无值班数据，可点击下方导入' : '暂无值班数据'}}</text>
-    </view>
-    <view wx:if="{{isCenterDirector}}" class="duty-actions">
-      <button class="btn btn-primary btn-block mb-16" loading="{{importing}}" bindtap="onImportDuty">📥 导入值班表</button>
-      <button wx:if="{{dutyByWeekday.length > 0}}" class="btn btn-danger btn-block" loading="{{cleaning}}" bindtap="onCleanDuty">清空值班记录</button>
-    </view>
   </view>
 
   <!-- 统计摘要 -->
@@ -47,8 +56,9 @@
     <view class="schedule-month-arrow" bindtap="onPrevMonth">◀</view>
     <view class="schedule-month-title">{{currentYear}}年 {{currentMonth}}月</view>
     <view class="schedule-month-arrow" bindtap="onNextMonth">▶</view>
+    <view class="schedule-today-btn" bindtap="onBackToday">回到今天</view>
     <view class="schedule-view-toggle" bindtap="onToggleView">
-      {{viewMode === 'calendar' ? '📋 列表' : '📅 日历'}}
+      <t-icon class="icon-inline" name="{{viewMode === 'calendar' ? 'view-list' : 'calendar'}}" size="30rpx"/>{{viewMode === 'calendar' ? '列表' : '日历'}}
     </view>
   </view>
 
@@ -60,16 +70,59 @@
         <view wx:for="{{weekDays}}" wx:key="*this" class="schedule-weekday">{{item}}</view>
       </view>
 
-      <!-- 日期网格 -->
+      <!-- 日期网格（点选日期） -->
       <view class="schedule-days">
         <view
           wx:for="{{calendarDays}}"
           wx:key="index"
-          class="schedule-day {{item.empty ? 'schedule-day--empty' : ''}} {{item.isWeekend ? 'schedule-day--weekend' : ''}} {{item.isToday ? 'schedule-day--today' : ''}}"
+          class="schedule-day {{item.empty ? 'schedule-day--empty' : ''}} {{item.isWeekend ? 'schedule-day--weekend' : ''}} {{item.isToday ? 'schedule-day--today' : ''}} {{item.isSelected ? 'schedule-day--selected' : ''}}"
+          data-date="{{item.date}}"
+          bindtap="onSelectDay"
         >
           <text wx:if="{{!item.empty}}" class="schedule-day-num">{{item.day}}</text>
         </view>
       </view>
+    </view>
+
+    <!-- 当天安排（任务 + 值班 + 成员空余五态） -->
+    <view class="card mt-16">
+      <view class="flex-between">
+        <view class="card-title" style="margin-bottom: 0;">{{selectedDateText}} · 当天安排</view>
+        <view class="schedule-summary" wx:if="{{!loading}}">{{daySummary.tasks}} 任务 · {{daySummary.duties}} 值班 · {{daySummary.available}} 空闲</view>
+      </view>
+      <view class="section-title">任务</view>
+      <block wx:if="{{dayTasks.length > 0}}">
+        <view wx:for="{{dayTasks}}" wx:key="_id" class="task-row" data-id="{{item._id}}" bindtap="onTaskTap">
+          <text class="task-time">{{item.startTime}}</text>
+          <text class="task-title">{{item.title}}</text>
+          <text class="task-status status-{{item.status}}">{{item.status}}</text>
+        </view>
+      </block>
+      <view wx:else class="empty-hint">当天无任务</view>
+
+      <view class="section-title mt-16">值班</view>
+      <block wx:if="{{dayDuties.length > 0}}">
+        <view wx:for="{{dayDuties}}" wx:key="slot" class="duty-row">
+          <text class="duty-slot">{{item.slot}}</text>
+          <view class="duty-cells">
+            <view wx:for="{{item.cells}}" wx:key="team" class="duty-cell">
+              <text class="duty-team">{{item.team}}：</text>
+              <text class="duty-names">{{item.names}}</text>
+            </view>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty-hint">当天无值班安排</view>
+
+      <view class="section-title mt-16">成员空余</view>
+      <view wx:if="{{dayMembers.length > 0}}" class="member-grid">
+        <view wx:for="{{dayMembers}}" wx:key="_id" class="member-cell">
+          <image class="member-avatar" src="{{item.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
+          <text class="member-name">{{item.name}}</text>
+          <text class="member-state state-{{item.state}}">{{item.state === 'available' ? '空闲' : item.state === 'busy' ? '忙碌' : item.state === 'unavailable' ? '不可用' : item.state === 'duty' ? '值班中' : '任务中'}}</text>
+        </view>
+      </view>
+      <view wx:else class="empty-hint">暂无成员数据</view>
     </view>
 
     <!-- 主任视图：成员可用性矩阵 -->
@@ -128,9 +181,9 @@
 
           <!-- 展开详情（不可用原因） -->
           <view wx:if="{{selectedMemberId === item._id && item.status === 'unavailable'}}" class="schedule-detail mt-16">
-            <text wx:if="{{item.reason}}" class="schedule-detail-text">📝 {{item.reason}}</text>
+            <text wx:if="{{item.reason}}" class="schedule-detail-text"><t-icon class="icon-inline" name="edit" size="28rpx"/>{{item.reason}}</text>
             <view wx:if="{{item.startDate}}" class="schedule-detail-text mt-8">
-              📅 {{item.startDate}} ~ {{item.endDate || '未定'}}
+              <t-icon class="icon-inline" name="calendar" size="28rpx"/>{{item.startDate}} ~ {{item.endDate || '未定'}}
             </view>
           </view>
         </view>

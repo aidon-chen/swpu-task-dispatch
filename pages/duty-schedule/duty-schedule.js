@@ -7,6 +7,7 @@
 const api = require('../../utils/api.js');
 const auth = require('../../utils/auth.js');
 const dateUtil = require('../../utils/date.js');
+const scheduleAgg = require('../../utils/scheduleAgg.js');
 
 Page({
   data: {
@@ -59,12 +60,26 @@ Page({
     },
     /** 本周值班安排（PRD 值班表导入）：[{ weekday, label, rows:[{slot, cells:[{team,names}]}] }] */
     dutyByWeekday: [],
+    /** 本周值班是否折叠（默认收起，节省空间） */
+    dutyCollapsed: true,
     /** 值班数据加载中 */
     dutyLoading: false,
     /** 导入中 */
     importing: false,
     /** 清理中 */
-    cleaning: false
+    cleaning: false,
+    /** 选中日期 YYYY-MM-DD（日程视图） */
+    selectedDate: '',
+    /** 选中日期展示文本（如 8月26日 周三） */
+    selectedDateText: '',
+    /** 当天任务 */
+    dayTasks: [],
+    /** 当天值班（slot 分组） */
+    dayDuties: [],
+    /** 当天成员空余（五态） */
+    dayMembers: [],
+    /** 当天摘要 */
+    daySummary: { tasks: 0, duties: 0, available: 0 }
   },
 
   onLoad() {
@@ -73,20 +88,104 @@ Page({
     const userInfo = auth.getCurrentUser();
     const isDir = auth.isDirector();
     const isCenter = auth.isCenterDirector();
+    const todayStr = dateUtil.formatDate(new Date());
 
+    this._dayReqSeq = 0; // loadDay 竞态守卫
     this.setData({
       currentUser: userInfo,
       isDirector: isDir,
       isCenterDirector: isCenter,
-      department: userInfo.department || ''
+      department: userInfo.department || '',
+      selectedDate: todayStr,
+      selectedDateText: this.formatSelectedDate(todayStr)
     });
 
     this.generateCalendar();
     this.loadData();
     this.loadDutyRecords();
+    this.loadDay(todayStr);
   },
 
   // ===== 本周值班（PRD 值班表导入）=====
+
+  /**
+   * 折叠/展开本周值班安排
+   */
+  onToggleDuty() {
+    this.setData({ dutyCollapsed: !this.data.dutyCollapsed });
+  },
+
+  // ===== 日程视图（月历点选 + 当天三区，原日程总览并入） =====
+
+  /** 选中日期 → "8月26日 周三" */
+  formatSelectedDate(date) {
+    if (!date) return '';
+    const d = new Date(`${date}T00:00:00`);
+    const labels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    return `${d.getMonth() + 1}月${d.getDate()}日 ${labels[d.getDay()]}`;
+  },
+
+  /**
+   * 加载选中日期的当天三区（任务 + 值班 + 成员空余五态）
+   */
+  async loadDay(date) {
+    if (!date) return;
+    const reqId = ++this._dayReqSeq;
+    this.setData({ loading: true, selectedDate: date, selectedDateText: this.formatSelectedDate(date) });
+    try {
+      const [taskRes, dutyRes, availRes] = await Promise.all([
+        api.getTasks({ startDate: date, endDate: date, pageSize: 50 }),
+        api.getDutyRecords({ date }),
+        api.getDutySchedule({ department: this.data.department, year: this.data.currentYear, month: this.data.currentMonth })
+      ]);
+      if (reqId !== this._dayReqSeq) return; // 过期请求丢弃
+
+      const tasks = (taskRes.code === 0 && taskRes.data) ? taskRes.data.tasks || [] : [];
+      const dayTasks = tasks.map(t => ({
+        _id: t._id,
+        title: t.title,
+        startTime: t.startTime || '',
+        type: t.type || '',
+        status: t.status || ''
+      }));
+
+      const duties = (dutyRes.code === 0 && dutyRes.data) ? dutyRes.data.list || [] : [];
+      const dayDuties = scheduleAgg.groupDuties(duties);
+
+      const members = (availRes.code === 0 && availRes.data) ? availRes.data.members || [] : [];
+      const dayMembers = scheduleAgg.buildMemberStates(members, tasks, duties);
+      const daySummary = scheduleAgg.buildDaySummary(dayTasks, dayDuties, dayMembers);
+
+      this.setData({ dayTasks, dayDuties, dayMembers, daySummary });
+    } catch (err) {
+      console.error('[值班表] 加载当天安排失败:', err);
+    } finally {
+      this.setData({ loading: false });
+    }
+  },
+
+  /** 点击月历日期 */
+  onSelectDay(e) {
+    const date = e.currentTarget.dataset.date;
+    if (!date) return;
+    this.setData({ selectedDate: date });
+    this.generateCalendar();
+    this.loadDay(date);
+  },
+
+  /** 回到今天 */
+  onBackToday() {
+    const now = new Date();
+    const todayStr = dateUtil.formatDate(now);
+    this.setData({
+      currentYear: now.getFullYear(),
+      currentMonth: now.getMonth() + 1,
+      selectedDate: todayStr
+    });
+    this.generateCalendar();
+    this.loadData();
+    this.loadDay(todayStr);
+  },
 
   /**
    * 加载本周值班记录并聚合为展示结构
@@ -243,7 +342,8 @@ Page({
         day: i,
         date,
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
-        isToday: date === dateUtil.formatDate(new Date())
+        isToday: date === dateUtil.formatDate(new Date()),
+        isSelected: date === this.data.selectedDate
       });
     }
 
@@ -264,6 +364,7 @@ Page({
     this.setData({ currentYear, currentMonth });
     this.generateCalendar();
     this.loadData();
+    this.loadDay(`${currentYear}-${String(currentMonth).padStart(2, '0')}-01`);
   },
 
   /**
@@ -280,6 +381,7 @@ Page({
     this.setData({ currentYear, currentMonth });
     this.generateCalendar();
     this.loadData();
+    this.loadDay(`${currentYear}-${String(currentMonth).padStart(2, '0')}-01`);
   },
 
   /**
@@ -436,6 +538,15 @@ Page({
         }
       }
     });
+  },
+
+  /**
+   * 跳到任务详情
+   */
+  onTaskTap(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/task-detail/task-detail?id=${id}` });
   },
 
   /**

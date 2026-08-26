@@ -84,37 +84,162 @@
   flex-wrap: wrap;
 }
 
+/* 点选版月历（日程并入）：today/selected 高亮挂固定尺寸 num，防 border 撑宽错位 */
 .schedule-day {
-  width: calc(100% / 7);
-  aspect-ratio: 1;
+  width: 14.28%;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
+  padding: 6rpx 0;
+  font-size: 26rpx;
+  color: #444;
 }
 
 .schedule-day--empty {
-  background: transparent;
+  visibility: hidden;
 }
 
 .schedule-day--weekend {
-  background: rgba(0, 0, 0, 0.02);
+  color: #B0B0B0;
 }
 
 .schedule-day--today .schedule-day-num {
-  background: var(--primary);
+  border: 2rpx solid #1976D2;
+}
+
+.schedule-day--selected .schedule-day-num {
+  background: #1976D2;
   color: #FFF;
 }
 
 .schedule-day-num {
+  box-sizing: border-box;
+  width: 56rpx;
+  height: 56rpx;
+  line-height: 56rpx;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 26rpx;
+}
+
+.schedule-today-btn {
+  font-size: 24rpx;
+  color: #1976D2;
+  border: 1rpx solid #B5D4F4;
+  border-radius: 12rpx;
+  padding: 6rpx 16rpx;
+}
+
+/* 当天三区（任务/值班/成员空余五态） */
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.schedule-summary {
+  font-size: 24rpx;
+  color: #1976D2;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.task-row:last-child {
+  border-bottom: none;
+}
+
+.task-time {
+  font-size: 24rpx;
+  color: #1976D2;
+  background: #E6F1FB;
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  flex-shrink: 0;
+}
+
+.task-title {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-status {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+  flex-shrink: 0;
+}
+
+.status-pending { color: #854F0B; background: #FAEEDA; }
+.status-confirmed { color: #3B6D11; background: #EAF3DE; }
+.status-in_progress { color: #BA7517; background: #FAEEDA; }
+.status-completed { color: #888; background: #F1EFE8; }
+
+.member-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+}
+
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding: 10rpx 12rpx;
+  background: #F7F8F9;
+  border-radius: 12rpx;
+}
+
+.member-avatar {
   width: 52rpx;
   height: 52rpx;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
+}
+
+.member-name {
+  flex: 1;
   font-size: 26rpx;
-  color: var(--text-primary);
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-state {
+  font-size: 22rpx;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  flex-shrink: 0;
+}
+
+.state-available { color: #3B6D11; background: #EAF3DE; }
+.state-busy { color: #BA7517; background: #FAEEDA; }
+.state-unavailable { color: #A32D2D; background: #FCEBEB; }
+.state-duty { color: #0C447C; background: #E6F1FB; }
+.state-task { color: #534AB7; background: #EEEDFE; }
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #999;
+  padding: 12rpx 0;
 }
 
 /* 可用性矩阵 */
@@ -301,4 +426,35 @@
 
 .duty-actions {
   margin-top: 20rpx;
+}
+
+/* 本周值班折叠头部 */
+.duty-collapse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rpx 0;
+}
+
+.duty-collapse-right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.duty-collapse-summary {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.duty-collapse-arrow {
+  font-size: 28rpx;
+  color: #1976D2;
+  padding: 8rpx 0 8rpx 16rpx;
+}
+
+.duty-link {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: #1976D2;
 }

@@ -34,7 +34,8 @@ const testFiles = [
   'exportReport.test.js',
   'rateTask.test.js',
   'generateTestData.test.js',
-  'importDutyRecords.test.js'
+  'importDutyRecords.test.js',
+  'scheduleAgg.test.js'
 ];
 
 let hasFailure = false;

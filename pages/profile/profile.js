@@ -111,7 +111,7 @@ Page({
       {
         icon: '📅',
         title: '值班表',
-        desc: '查看部门值班安排',
+        desc: '值班安排与日程总览',
         url: '/pages/duty-schedule/duty-schedule',
         tab: true
       },
