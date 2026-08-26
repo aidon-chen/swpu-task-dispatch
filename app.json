@@ -15,7 +15,8 @@
     "pages/key-generate/key-generate",
     "pages/messages/messages",
     "pages/web-view/web-view",
-    "pages/setup/setup"
+    "pages/setup/setup",
+    "pages/test-tools/test-tools"
   ],
   "window": {
     "backgroundTextStyle": "light",
@@ -53,6 +54,10 @@
         "text": "我的",
         "iconPath": "images/tab-profile.png",
         "selectedIconPath": "images/tab-profile-active.png"
+      },
+      {
+        "pagePath": "pages/test-tools/test-tools",
+        "text": "测试"
       }
     ]
   },

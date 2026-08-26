@@ -1,0 +1,9 @@
+{
+  "name": "importDutyRecords",
+  "version": "1.0.0",
+  "description": "值班表导入云函数（读包内 duty_data.json 批量写 duty_records）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

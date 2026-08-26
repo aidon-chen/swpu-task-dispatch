@@ -1,5 +1,31 @@
 <!-- 值班表页面 -->
 <view class="container">
+  <!-- 本周值班安排（PRD 值班表导入） -->
+  <view class="card mt-16">
+    <view class="card-title">📅 本周值班安排</view>
+    <block wx:for="{{dutyByWeekday}}" wx:key="weekday" wx:for-item="day">
+      <view class="duty-day">
+        <view class="duty-day-title">{{day.label}}</view>
+        <view wx:for="{{day.rows}}" wx:key="slot" wx:for-item="row" class="duty-row">
+          <text class="duty-slot">{{row.slot}}</text>
+          <view class="duty-cells">
+            <view wx:for="{{row.cells}}" wx:key="team" wx:for-item="cell" class="duty-cell">
+              <text class="duty-team">{{cell.team}}：</text>
+              <text class="duty-names">{{cell.names}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+    <view wx:if="{{dutyByWeekday.length === 0 && !dutyLoading}}" class="empty-state" style="padding: 40rpx 0;">
+      <text class="text">{{isCenterDirector ? '暂无值班数据，可点击下方导入' : '暂无值班数据'}}</text>
+    </view>
+    <view wx:if="{{isCenterDirector}}" class="duty-actions">
+      <button class="btn btn-primary btn-block mb-16" loading="{{importing}}" bindtap="onImportDuty">📥 导入值班表</button>
+      <button wx:if="{{dutyByWeekday.length > 0}}" class="btn btn-danger btn-block" loading="{{cleaning}}" bindtap="onCleanDuty">清空值班记录</button>
+    </view>
+  </view>
+
   <!-- 统计摘要 -->
   <view class="schedule-summary">
     <view class="schedule-summary-item">

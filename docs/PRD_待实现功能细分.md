@@ -362,8 +362,8 @@ center_director → key-generate 页 → generateKey 云函数 → keys 集合
 ### 里程碑 M2（体验增强，建议 1 周）— P2
 - [x] M7 评价反馈（2026-08-26：`rateTask` 云函数 + task-detail 星级评价 UI + getReport 均分聚合 + 12+2 测试）
 - [x] M8 任务模板（2026-07-19：createTask 存模板/从模板实例化 + getTemplates + create-task 页）
-- [ ] M9 高级搜索
-- [ ] M10-3 数据初始化清单补全
+- [x] M9 高级搜索（2026-08-26：getTasks 组合筛选 + index 页高级筛选面板 + 筛选持久化 + 6 测试）
+- [x] M10-3 数据初始化清单补全（2026-08-26：docs/环境初始化清单.md 完整版——8 集合/17 索引/初始主任/密钥策略/测试工具/14 项开关核对表/测试 tab 处理/发布红线 checklist）
 - **验收门禁**：任务可评价、可存模板、列表可多维筛选；三环境可独立部署。
 
 ---

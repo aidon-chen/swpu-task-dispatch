@@ -47,14 +47,16 @@ exports.main = async (event, context) => {
     const pageSize = Math.min(50, Math.max(1, event.pageSize || 20));
     const skip = (page - 1) * pageSize;
 
-    // 5. 查询任务
+    // 5. 查询任务（M9：支持按时间/优先级排序）
     const tasksCollection = db.collection('tasks');
     const countRes = await tasksCollection.where(query).count();
     const total = countRes.total;
 
+    const orderField = event.sort === 'priority' ? 'priority' : 'startTime';
+
     const { data: tasks } = await tasksCollection
       .where(query)
-      .orderBy('startTime', 'desc')
+      .orderBy(orderField, 'desc')
       .skip(skip)
       .limit(pageSize)
       .get();
@@ -180,6 +182,36 @@ function buildQuery(event, user, userLevel) {
       regexp: keyword,
       options: 'i'
     });
+  }
+
+  // M9 高级筛选：类型（模糊匹配，任务类型为自由文本）
+  if (event.type && String(event.type).trim()) {
+    query.type = db.RegExp({
+      regexp: String(event.type).trim(),
+      options: 'i'
+    });
+  }
+
+  // M9 高级筛选：部门（按创建者所属部门精确匹配）
+  if (event.department) {
+    query.ownerDepartment = event.department;
+  }
+
+  // M9 高级筛选：时间区间（按任务开始时间）
+  if (event.startDate || event.endDate) {
+    if (event.startDate && event.endDate) {
+      query.startTime = _.gte(new Date(event.startDate))
+        .and(_.lte(new Date(event.endDate + ' 23:59:59')));
+    } else if (event.startDate) {
+      query.startTime = _.gte(new Date(event.startDate));
+    } else {
+      query.startTime = _.lte(new Date(event.endDate + ' 23:59:59'));
+    }
+  }
+
+  // M9 高级筛选：只看跨部门任务
+  if (event.isCrossDepartment === true) {
+    query.isCrossDepartment = true;
   }
 
   return query;

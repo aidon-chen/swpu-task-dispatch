@@ -56,7 +56,15 @@ Page({
       busy: 0,
       unavailable: 0,
       total: 0
-    }
+    },
+    /** 本周值班安排（PRD 值班表导入）：[{ weekday, label, rows:[{slot, cells:[{team,names}]}] }] */
+    dutyByWeekday: [],
+    /** 值班数据加载中 */
+    dutyLoading: false,
+    /** 导入中 */
+    importing: false,
+    /** 清理中 */
+    cleaning: false
   },
 
   onLoad() {
@@ -75,6 +83,112 @@ Page({
 
     this.generateCalendar();
     this.loadData();
+    this.loadDutyRecords();
+  },
+
+  // ===== 本周值班（PRD 值班表导入）=====
+
+  /**
+   * 加载本周值班记录并聚合为展示结构
+   */
+  async loadDutyRecords() {
+    this.setData({ dutyLoading: true });
+    try {
+      const weekdayLabels = { 1: '周一', 2: '周二', 3: '周三', 4: '周四', 5: '周五' };
+      const list = [];
+      for (let wd = 1; wd <= 5; wd++) {
+        const res = await api.getDutyRecords({ weekday: wd });
+        if (res.code === 0 && res.data && res.data.list) {
+          list.push(...res.data.list);
+        }
+      }
+      // 聚合：weekday → slot → team → names
+      const grid = [];
+      for (let wd = 1; wd <= 5; wd++) {
+        const dayList = list.filter(r => r.weekday === wd);
+        if (dayList.length === 0) continue;
+        const slotMap = {};
+        dayList.forEach(r => {
+          if (!slotMap[r.slot]) slotMap[r.slot] = {};
+          if (!slotMap[r.slot][r.team]) slotMap[r.slot][r.team] = [];
+          // 同一周几整个学期多日记录，姓名按 slot+team 去重（周模板语义：每周固定人员）
+          if (!slotMap[r.slot][r.team].includes(r.name)) {
+            slotMap[r.slot][r.team].push(r.name);
+          }
+        });
+        const rows = Object.keys(slotMap).sort().map(slot => ({
+          slot,
+          cells: Object.keys(slotMap[slot]).map(team => ({
+            team,
+            names: slotMap[slot][team].join('、')
+          }))
+        }));
+        grid.push({ weekday: wd, label: weekdayLabels[wd], rows });
+      }
+      this.setData({ dutyByWeekday: grid });
+    } catch (err) {
+      console.error('[值班表] 加载值班记录失败:', err);
+    } finally {
+      this.setData({ dutyLoading: false });
+    }
+  },
+
+  /**
+   * 导入值班表（仅视觉中心主任，云端二次校验）
+   */
+  onImportDuty() {
+    wx.showModal({
+      title: '导入值班表',
+      content: '将导入本学期（2025-2026春季）全部值班安排（约 1400+ 条记录），重复导入自动跳过。确定继续？',
+      confirmColor: '#1976D2',
+      success: async (modalRes) => {
+        if (!modalRes.confirm) return;
+        this.setData({ importing: true });
+        try {
+          const res = await api.importDutyRecords({ action: 'import' });
+          if (res.code === 0) {
+            wx.showToast({ title: `导入成功（+${res.data.inserted} 条）`, icon: 'success' });
+            this.loadDutyRecords();
+          } else {
+            wx.showToast({ title: res.message || '导入失败', icon: 'none' });
+          }
+        } catch (err) {
+          console.error('[值班表] 导入失败:', err);
+          wx.showToast({ title: '导入失败', icon: 'none' });
+        } finally {
+          this.setData({ importing: false });
+        }
+      }
+    });
+  },
+
+  /**
+   * 清空值班记录（重新导入前使用）
+   */
+  onCleanDuty() {
+    wx.showModal({
+      title: '清空值班记录',
+      content: '将删除全部本学期值班记录（约 1400+ 条），此操作不可撤销。确定继续？',
+      confirmColor: '#F44336',
+      success: async (modalRes) => {
+        if (!modalRes.confirm) return;
+        this.setData({ cleaning: true });
+        try {
+          const res = await api.importDutyRecords({ action: 'clean' });
+          if (res.code === 0) {
+            wx.showToast({ title: `已清空 ${res.data.removed} 条`, icon: 'success' });
+            this.setData({ dutyByWeekday: [] });
+          } else {
+            wx.showToast({ title: res.message || '操作失败', icon: 'none' });
+          }
+        } catch (err) {
+          console.error('[值班表] 清空失败:', err);
+          wx.showToast({ title: '操作失败', icon: 'none' });
+        } finally {
+          this.setData({ cleaning: false });
+        }
+      }
+    });
   },
 
   /**

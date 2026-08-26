@@ -21,9 +21,33 @@ Page({
     filter: {
       status: '',
       keyword: '',
+      type: '',
+      department: '',
+      startDate: '',
+      endDate: '',
+      sort: 'time',
+      isCrossDepartment: false,
       page: 1,
       pageSize: 20
     },
+    /** 是否展开高级筛选面板 */
+    showFilterPanel: false,
+    /** 是否存在非默认筛选（用于角标与空态文案） */
+    hasActiveFilter: false,
+    /** 部门选项 */
+    departmentOptions: [
+      { value: 'photography', label: '摄影部' },
+      { value: 'video', label: '视频部' }
+    ],
+    /** 排序选项 */
+    sortOptions: [
+      { value: 'time', label: '按时间' },
+      { value: 'priority', label: '按优先级' }
+    ],
+    /** 部门筛选显示名 */
+    departmentLabel: '部门',
+    /** 排序显示名 */
+    sortLabel: '按时间',
     /** 是否还有更多 */
     hasMore: true,
     /** 是否正在加载 */
@@ -47,6 +71,17 @@ Page({
 
   onLoad() {
     if (!auth.requireLogin()) return;
+    // M9-3 筛选持久化：恢复上次筛选
+    const saved = wx.getStorageSync('td_taskFilter');
+    if (saved && typeof saved === 'object') {
+      const filter = { ...this.data.filter, ...saved };
+      this.setData({
+        filter,
+        hasActiveFilter: this.computeHasActiveFilter(filter),
+        departmentLabel: this.getDepartmentLabel(filter.department),
+        sortLabel: this.getSortLabel(filter.sort)
+      });
+    }
   },
 
   onShow() {
@@ -85,10 +120,25 @@ Page({
 
     this.setData({ loading: true });
 
+    const { status, keyword, type, department, startDate, endDate, sort, isCrossDepartment } = this.data.filter;
+
+    // M9 边界：非法时间区间 → 提示且不发请求
+    if (startDate && endDate && startDate > endDate) {
+      wx.showToast({ title: '开始日期不能晚于结束日期', icon: 'none' });
+      this.setData({ loading: false });
+      return;
+    }
+
     try {
       const res = await api.getTasks({
-        status: this.data.filter.status,
-        keyword: this.data.filter.keyword,
+        status,
+        keyword,
+        type,
+        department,
+        startDate,
+        endDate,
+        sort,
+        isCrossDepartment: isCrossDepartment || undefined,
         page: this.data.filter.page,
         pageSize: this.data.filter.pageSize,
         myTasks: this.data.activeTab === 'mine'
@@ -158,6 +208,146 @@ Page({
       'filter.status': this.data.filter.status === status ? '' : status
     });
     this.loadTasks(true);
+  },
+
+  // ===== M9 高级筛选 =====
+
+  /**
+   * 展开/收起高级筛选面板
+   */
+  onToggleFilterPanel() {
+    this.setData({ showFilterPanel: !this.data.showFilterPanel });
+  },
+
+  /**
+   * 类型关键词输入（仅更新本地，点「应用」才生效）
+   */
+  onFilterTypeInput(e) {
+    this.updateFilter({ type: e.detail.value }, { save: false });
+  },
+
+  /**
+   * 部门选择
+   */
+  onFilterDepartment(e) {
+    const idx = Number(e.detail.value);
+    const dept = this.data.departmentOptions[idx] ? this.data.departmentOptions[idx].value : '';
+    this.updateFilter({ department: dept });
+  },
+
+  /**
+   * 开始日期
+   */
+  onStartDateChange(e) {
+    this.updateFilter({ startDate: e.detail.value });
+  },
+
+  /**
+   * 结束日期
+   */
+  onEndDateChange(e) {
+    this.updateFilter({ endDate: e.detail.value });
+  },
+
+  /**
+   * 仅看跨部门：点击行文字取反
+   */
+  onToggleCrossDept() {
+    this.updateFilter({ isCrossDepartment: !this.data.filter.isCrossDepartment });
+  },
+
+  /**
+   * 仅看跨部门：switch 变更用值
+   */
+  onSwitchCrossDept(e) {
+    this.updateFilter({ isCrossDepartment: !!e.detail.value });
+  },
+
+  /**
+   * 排序方式（时间/优先级）
+   */
+  onSortChange(e) {
+    const idx = Number(e.detail.value);
+    const sort = this.data.sortOptions[idx] ? this.data.sortOptions[idx].value : 'time';
+    this.updateFilter({ sort });
+  },
+
+  /**
+   * 应用筛选：保存 + 收起面板 + 刷新
+   */
+  onApplyFilters() {
+    this.saveFilter();
+    this.setData({ showFilterPanel: false });
+    this.loadTasks(true);
+  },
+
+  /**
+   * 重置高级筛选
+   */
+  onResetFilter() {
+    this.updateFilter({
+      type: '', department: '', startDate: '', endDate: '',
+      isCrossDepartment: false, sort: 'time'
+    }, { save: false });
+    this.saveFilter();
+    this.setData({ showFilterPanel: false });
+    this.loadTasks(true);
+  },
+
+  /**
+   * 统一更新筛选：合并 + 刷新角标/标签
+   */
+  updateFilter(patch, opts = {}) {
+    const filter = { ...this.data.filter, ...patch };
+    this.setData({
+      filter,
+      hasActiveFilter: this.computeHasActiveFilter(filter),
+      departmentLabel: this.getDepartmentLabel(filter.department),
+      sortLabel: this.getSortLabel(filter.sort)
+    });
+    if (opts.save !== false) this.saveFilter();
+  },
+
+  /**
+   * 判断是否存在非默认的高级筛选（status/keyword 走独立控件，不计入）
+   */
+  computeHasActiveFilter(filter) {
+    return !!(filter.type || filter.department || filter.startDate || filter.endDate ||
+      filter.isCrossDepartment || filter.sort !== 'time');
+  },
+
+  /**
+   * 部门显示名
+   */
+  getDepartmentLabel(dept) {
+    if (!dept) return '部门';
+    const opt = this.data.departmentOptions.find(o => o.value === dept);
+    return opt ? opt.label : dept;
+  },
+
+  /**
+   * 排序显示名
+   */
+  getSortLabel(sort) {
+    const opt = this.data.sortOptions.find(o => o.value === sort);
+    return opt ? opt.label : '按时间';
+  },
+
+  /**
+   * 持久化筛选条件（M9-3，排除分页字段）
+   */
+  saveFilter() {
+    const f = this.data.filter;
+    wx.setStorageSync('td_taskFilter', {
+      status: f.status,
+      keyword: f.keyword,
+      type: f.type,
+      department: f.department,
+      startDate: f.startDate,
+      endDate: f.endDate,
+      sort: f.sort,
+      isCrossDepartment: f.isCrossDepartment
+    });
   },
 
   /**

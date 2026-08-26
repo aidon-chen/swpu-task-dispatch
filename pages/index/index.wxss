@@ -127,3 +127,61 @@
   color: #FFFFFF;
   line-height: 1;
 }
+
+/* ===== M9 高级筛选 ===== */
+.index-filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14rpx 0 4rpx;
+  font-size: 26rpx;
+  color: #1976D2;
+}
+
+.index-filter-toggle-text {
+  margin-right: 8rpx;
+}
+
+.index-filter-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #FA8C16;
+}
+
+.index-filter-panel {
+  background: #FFF;
+  border-radius: 16rpx;
+  margin: 12rpx 24rpx;
+  padding: 24rpx;
+}
+
+.index-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+.index-filter-grid .form-input {
+  height: 72rpx;
+  box-sizing: border-box;
+}
+
+.index-cross-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 28rpx;
+  padding: 8rpx 4rpx;
+}
+
+.index-filter-actions {
+  display: flex;
+  margin-top: 24rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}

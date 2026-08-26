@@ -32,7 +32,9 @@ const testFiles = [
   'getNewsCache.test.js',
   'getReport.test.js',
   'exportReport.test.js',
-  'rateTask.test.js'
+  'rateTask.test.js',
+  'generateTestData.test.js',
+  'importDutyRecords.test.js'
 ];
 
 let hasFailure = false;

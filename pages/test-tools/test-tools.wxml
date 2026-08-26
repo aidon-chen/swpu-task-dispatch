@@ -1,0 +1,71 @@
+<!-- 测试工具中心（tabBar，仅测试模式启用工具） -->
+<view class="container">
+  <!-- 状态卡 -->
+  <view class="card">
+    <view class="card-title">🧪 测试模式</view>
+    <view class="status-row">
+      <text class="status-label">状态</text>
+      <text class="status-value {{isTestMode ? 'status-on' : 'status-off'}}">{{isTestMode ? '已开启' : '已关闭'}}</text>
+    </view>
+    <view class="status-row">
+      <text class="status-label">环境版本</text>
+      <text class="status-value">{{envVersion || 'unknown'}}</text>
+    </view>
+    <view wx:if="{{statusReason}}" class="status-row">
+      <text class="status-label">关闭原因</text>
+      <text class="status-value">{{statusReason}}</text>
+    </view>
+  </view>
+
+  <!-- 测试模式开启：工具卡片 -->
+  <block wx:if="{{isTestMode}}">
+    <!-- S2 快速新建用户 -->
+    <view class="card">
+      <view class="card-title">👥 快速新建测试用户</view>
+      <view class="card-desc">生成 member 测试用户（摄影/视频各半），用于任务指派与成员展示</view>
+      <view class="count-chips">
+        <view
+          wx:for="{{userCounts}}"
+          wx:key="*this"
+          class="count-chip {{selectedUserCount === item ? 'count-chip--active' : ''}}"
+          data-count="{{item}}"
+          bindtap="onSelectUserCount"
+        >{{item}} 个</view>
+      </view>
+      <button class="btn btn-primary btn-block" loading="{{actionLoading}}" bindtap="onGenerateUsers">新建测试用户</button>
+    </view>
+
+    <!-- S3 生成测试任务 -->
+    <view class="card">
+      <view class="card-title">📋 生成测试任务</view>
+      <view class="card-desc">自动确保测试用户存在，覆盖 5 状态/2 部门/2 优先级/跨月时间</view>
+      <view class="count-chips">
+        <view
+          wx:for="{{counts}}"
+          wx:key="*this"
+          class="count-chip {{selectedCount === item ? 'count-chip--active' : ''}}"
+          data-count="{{item}}"
+          bindtap="onSelectCount"
+        >{{item}} 个</view>
+      </view>
+      <button class="btn btn-primary btn-block" loading="{{actionLoading}}" bindtap="onGenerate">生成测试任务</button>
+    </view>
+
+    <!-- S4 清理测试数据 -->
+    <view class="card">
+      <view class="card-title">🗑 清理测试数据</view>
+      <view class="card-desc">删除全部带 [测试] 标记的任务与用户，不影响真实数据</view>
+      <button class="btn btn-danger btn-block" loading="{{actionLoading}}" bindtap="onClean">一键清理测试数据</button>
+    </view>
+  </block>
+
+  <!-- 测试模式关闭：占位 -->
+  <view wx:else class="card">
+    <view class="empty-state" style="padding: 60rpx 0;">
+      <text class="text">测试模式未开启</text>
+      <view class="empty-hint">请在 config/test.js 开启 enabled 后使用测试工具</view>
+    </view>
+  </view>
+
+  <view style="height: 40rpx;"></view>
+</view>

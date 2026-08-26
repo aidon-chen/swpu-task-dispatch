@@ -253,3 +253,52 @@
 .mx-8 {
   margin: 0 8rpx;
 }
+
+/* ===== 本周值班安排（PRD 值班表导入） ===== */
+.duty-day {
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.duty-day:last-child {
+  border-bottom: none;
+}
+
+.duty-day-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.duty-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 6rpx 0;
+}
+
+.duty-slot {
+  flex-shrink: 0;
+  width: 96rpx;
+  font-size: 24rpx;
+  color: #1976D2;
+  padding-top: 4rpx;
+}
+
+.duty-cells {
+  flex: 1;
+  font-size: 26rpx;
+  line-height: 1.7;
+}
+
+.duty-team {
+  color: #999;
+}
+
+.duty-names {
+  color: #333;
+}
+
+.duty-actions {
+  margin-top: 20rpx;
+}

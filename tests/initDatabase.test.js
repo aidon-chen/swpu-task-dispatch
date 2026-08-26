@@ -10,7 +10,7 @@ installMock();
 const initDatabase = require('../cloudfunctions/initDatabase/index.js').main;
 const db = getMockDb();
 
-const ALL = ['users', 'keys', 'tasks', 'user_status', 'locations', 'notifications', 'duty_schedule', 'news_cache'];
+const ALL = ['users', 'keys', 'tasks', 'user_status', 'locations', 'notifications', 'duty_schedule', 'news_cache', 'duty_records'];
 
 let failed = 0;
 async function test(name, fn) {
@@ -19,12 +19,12 @@ async function test(name, fn) {
 }
 
 async function run() {
-  // TC-43 首次运行：创建全部 8 个集合
+  // TC-43 首次运行：创建全部 9 个集合
   await test('TC-43 首次运行创建全部集合', async () => {
     seed({}); // 空库
     const res = await initDatabase({});
     assert.strictEqual(res.code, 0);
-    assert.strictEqual(res.data.created.length, ALL.length, '应创建 8 个');
+    assert.strictEqual(res.data.created.length, ALL.length, '应创建 9 个');
     assert.strictEqual(res.data.skipped.length, 0, '无跳过');
     for (const name of ALL) {
       assert.ok(db._collections[name] !== undefined, `集合 ${name} 应存在`);

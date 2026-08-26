@@ -18,7 +18,8 @@ const REQUIRED_COLLECTIONS = [
   'locations',    // 拍摄机位
   'notifications',// 通知记录
   'duty_schedule',// 值班排班矩阵（按 userId × date）
-  'news_cache'    // 新闻匹配缓存（按 taskId）
+  'news_cache',   // 新闻匹配缓存（按 taskId）
+  'duty_records'  // 值班记录（PRD 值班表导入，date × slot × 人）
 ];
 
 exports.main = async (event, context) => {

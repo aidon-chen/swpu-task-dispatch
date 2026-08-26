@@ -127,10 +127,15 @@ function makeCollection(name, db) {
       return { data: docs.map((d) => structuredClone(d)) };
     },
     async add({ data }) {
-      const doc = { ...data, _id: 'id_' + Math.random().toString(36).slice(2, 9) };
-      db._collections[name] = db._collections[name] || [];
-      db._collections[name].push(doc);
-      return { _id: doc._id };
+      // 支持批量插入（真实 CloudBase 传数组一次可插多条），单条也兼容
+      const list = Array.isArray(data) ? data : [data];
+      const ids = list.map((d) => {
+        const doc = { ...d, _id: 'id_' + Math.random().toString(36).slice(2, 9) };
+        db._collections[name] = db._collections[name] || [];
+        db._collections[name].push(doc);
+        return doc._id;
+      });
+      return { _id: ids[0], ids };
     },
     async update({ data }) {
       let docs = (db._collections[name] || []).slice();

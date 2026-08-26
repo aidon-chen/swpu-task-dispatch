@@ -1,0 +1,9 @@
+{
+  "name": "getDutyRecords",
+  "version": "1.0.0",
+  "description": "获取值班记录云函数（按日期/周几/团队查询）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

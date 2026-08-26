@@ -283,6 +283,47 @@ async function rateTask(params = {}) {
   return callCloudFunction('rateTask', data);
 }
 
+/**
+ * 生成/清理测试数据（测试工具中心）
+ * @param {Object} params - { action: 'generate_users'|'generate'|'clean', count? }
+ * @returns {Promise<Object>}
+ */
+async function generateTestData(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+    console.log('[API] 调试模式：向 generateTestData 附加调试角色', user.role);
+  }
+  return callCloudFunction('generateTestData', data);
+}
+
+/**
+ * 导入/清理值班记录（仅视觉中心主任）
+ * @param {Object} params - { action?: 'import'|'clean' }
+ * @returns {Promise<Object>}
+ */
+async function importDutyRecords(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+    console.log('[API] 调试模式：向 importDutyRecords 附加调试角色', user.role);
+  }
+  return callCloudFunction('importDutyRecords', data);
+}
+
+/**
+ * 获取值班记录
+ * @param {Object} params - { date?, weekday?, team?, source?, page?, pageSize? }
+ * @returns {Promise<Object>} { code, data: { list, total } }
+ */
+async function getDutyRecords(params = {}) {
+  return callCloudFunction('getDutyRecords', params);
+}
+
 module.exports = {
   callCloudFunction,
   login,
@@ -305,5 +346,8 @@ module.exports = {
   crawlNews,
   getNewsCache,
   exportReport,
-  rateTask
+  rateTask,
+  generateTestData,
+  importDutyRecords,
+  getDutyRecords
 };
