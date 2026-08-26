@@ -9,6 +9,6 @@
  *   - 正式版部署前必须把 enabled 改回 false。
  */
 module.exports = {
-  enabled: true,
+  enabled: false,
   allowDebugRoleOverride: true
 };
