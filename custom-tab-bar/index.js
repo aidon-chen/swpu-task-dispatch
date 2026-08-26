@@ -53,9 +53,13 @@ Component({
 
   lifetimes: {
     attached() {
-      const enabled = testMode.getStatus().enabled;
+      // 测试 tab 显隐按「环境版本」判断（与 config/test.js 的 enabled 解耦）：
+      //   develop / trial（测试版）→ 显示 5 tab（含测试）
+      //   release（正式版）→ 只渲染 4 tab（测试 tab 自动隐藏）
+      const status = testMode.getStatus();
+      const isRelease = status.envVersion === 'release';
       this.setData({
-        list: enabled ? ALL_TABS : ALL_TABS.filter(function (t) { return !t.testOnly; })
+        list: isRelease ? ALL_TABS.filter(function (t) { return !t.testOnly; }) : ALL_TABS
       });
     }
   },
