@@ -99,6 +99,29 @@ async function run() {
     assert.strictEqual(res.data.detailList.length, 2, '越权为主任后应只看摄影部');
   });
 
+  // TC-111 有评价的任务：summary/detail 均分正确（M7）
+  await test('TC-111 评价均分聚合正确', async () => {
+    const ratedTasks = [
+      { _id: 'r1', assignedTo: ['u_member'], status: 'completed', createdAt: '2026-07-10', startTime: '2026-07-10T09:00:00', endTime: '2026-07-10T12:00:00', ratings: [{ userId: 'u_member', score: 5 }], avgScore: 5 },
+      { _id: 'r2', assignedTo: ['u_member'], status: 'completed', createdAt: '2026-07-11', startTime: '2026-07-11T09:00:00', endTime: '2026-07-11T13:00:00', ratings: [{ userId: 'u_dir', score: 3 }], avgScore: 3 }
+    ];
+    seed({ users: USERS.slice(), tasks: ratedTasks });
+    const res = await getReport({ ...PERIOD });
+    assert.strictEqual(res.code, 0);
+    assert.strictEqual(res.data.summary.avgScore, 4, '全局均分应为 (5+3)/2=4');
+    const me = res.data.detailList[0];
+    assert.strictEqual(me.avgScore, 4, '个人均分应为 4');
+  });
+
+  // TC-112 无评价的任务：均分为 0（M7）
+  await test('TC-112 无评价时均分为 0', async () => {
+    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    const res = await getReport({ ...PERIOD });
+    assert.strictEqual(res.code, 0);
+    assert.strictEqual(res.data.summary.avgScore, 0);
+    assert.strictEqual(res.data.detailList[0].avgScore, 0);
+  });
+
   console.log('\ngetReport 测试完成');
   if (failed) process.exitCode = 1;
 }

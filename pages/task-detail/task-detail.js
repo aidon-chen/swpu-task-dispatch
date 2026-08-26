@@ -34,7 +34,23 @@ Page({
     /** 调整说明 */
     adjustReason: '',
     /** 显示关联新闻 */
-    showNewsSection: false
+    showNewsSection: false,
+    /** 任务平均评分 */
+    avgScore: 0,
+    /** 评价人数 */
+    ratingCount: 0,
+    /** 我的评价（{score, comment, createdAt}） */
+    myRating: null,
+    /** 当前用户是否可评价（已完成且参与/主任） */
+    canRate: false,
+    /** 显示评价弹窗 */
+    showRateModal: false,
+    /** 弹窗中选中的评分 */
+    rateScore: 0,
+    /** 弹窗中输入的评语 */
+    rateComment: '',
+    /** 星级选择项 */
+    rateStars: [1, 2, 3, 4, 5]
   },
 
   onLoad(options) {
@@ -65,12 +81,23 @@ Page({
         const task = res.data.tasks[0];
         const userInfo = this.data.currentUser;
 
+        // 评价相关：本人旧评 + 可评条件（已完成 且 参与人/主任）
+        const myRating = task.ratings
+          ? (task.ratings.find(r => r.userId === userInfo._id) || null)
+          : null;
+        const canRate = task.status === 'completed' &&
+          (auth.isDirector() || auth.isAssignedToTask(task));
+
         this.setData({
           task,
           isCreator: auth.isTaskCreator(task),
           isAssigned: auth.isAssignedToTask(task),
           assignedMembers: res.data.members || [],
           locationInfo: res.data.location || null,
+          avgScore: task.avgScore || 0,
+          ratingCount: task.ratings ? task.ratings.length : 0,
+          myRating,
+          canRate,
           loading: false
         });
 
@@ -254,6 +281,71 @@ Page({
       wx.navigateTo({
         url: `/pages/web-view/web-view?url=${encodeURIComponent(url)}`
       });
+    }
+  },
+
+  /**
+   * 打开评价弹窗（预填本人旧评）
+   */
+  onOpenRateModal() {
+    const { myRating } = this.data;
+    this.setData({
+      showRateModal: true,
+      rateScore: myRating ? myRating.score : 0,
+      rateComment: myRating ? (myRating.comment || '') : ''
+    });
+  },
+
+  /**
+   * 关闭评价弹窗
+   */
+  onCloseRateModal() {
+    this.setData({ showRateModal: false, rateScore: 0, rateComment: '' });
+  },
+
+  /**
+   * 选择星级
+   */
+  onRateStarTap(e) {
+    this.setData({ rateScore: Number(e.currentTarget.dataset.score) });
+  },
+
+  /**
+   * 评语输入
+   */
+  onRateCommentInput(e) {
+    this.setData({ rateComment: e.detail.value });
+  },
+
+  /**
+   * 提交评价
+   */
+  async onSubmitRate() {
+    const { rateScore, rateComment } = this.data;
+    if (!rateScore || rateScore < 1 || rateScore > 5) {
+      wx.showToast({ title: '请选择评分', icon: 'none' });
+      return;
+    }
+
+    this.setData({ actionLoading: true });
+    try {
+      const res = await api.rateTask({
+        taskId: this.data.taskId,
+        score: rateScore,
+        comment: rateComment.trim()
+      });
+      if (res.code === 0) {
+        wx.showToast({ title: '评价成功', icon: 'success' });
+        this.setData({ showRateModal: false });
+        this.loadTaskDetail(this.data.taskId);
+      } else {
+        wx.showToast({ title: res.message, icon: 'none' });
+      }
+    } catch (err) {
+      console.error('[任务详情] 提交评价失败:', err);
+      wx.showToast({ title: '提交失败', icon: 'none' });
+    } finally {
+      this.setData({ actionLoading: false });
     }
   }
 });

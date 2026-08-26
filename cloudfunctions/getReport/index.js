@@ -36,6 +36,15 @@ function formatDate(d) {
 }
 
 /**
+ * 计算任务评价均分（保留 1 位小数）
+ */
+function computeAvgScore(ratings) {
+  if (!ratings || ratings.length === 0) return 0;
+  const sum = ratings.reduce((acc, r) => acc + (r.score || 0), 0);
+  return Math.round((sum / ratings.length) * 10) / 10;
+}
+
+/**
  * 根据 period 计算查询的日期范围
  */
 function getDateRange(event) {
@@ -125,7 +134,7 @@ async function computeReport(event, currentUser, effectiveLevel) {
   const { data: tasks } = await tasksCollection
     .where(tasksQuery)
     .field({
-      _id: true, title: true, status: true, startTime: true, endTime: true, assignedTo: true
+      _id: true, title: true, status: true, startTime: true, endTime: true, assignedTo: true, ratings: true
     })
     .limit(1000)
     .get();
@@ -133,11 +142,12 @@ async function computeReport(event, currentUser, effectiveLevel) {
   // 3. 聚合
   const stats = {};
   scopeIds.forEach(id => {
-    stats[id] = { total: 0, completed: 0, hours: 0, tasks: [] };
+    stats[id] = { total: 0, completed: 0, hours: 0, tasks: [], ratingScores: [] };
   });
 
   tasks.forEach(t => {
     const assigned = (t.assignedTo || []).filter(id => scopeIds.includes(id));
+    const taskAvg = computeAvgScore(t.ratings);
     assigned.forEach(uid => {
       const s = stats[uid];
       s.total += 1;
@@ -145,6 +155,9 @@ async function computeReport(event, currentUser, effectiveLevel) {
       if (t.startTime && t.endTime) {
         const h = (new Date(t.endTime) - new Date(t.startTime)) / 3600000;
         if (h > 0 && h < 24 * 30) s.hours += h; // 过滤异常值
+      }
+      if (t.status === 'completed' && taskAvg > 0) {
+        s.ratingScores.push(taskAvg); // 已完成且有评分的任务均分
       }
       if (s.tasks.length < 5) {
         s.tasks.push({ _id: t._id, title: t.title, date: formatDate(t.startTime) });
@@ -156,6 +169,9 @@ async function computeReport(event, currentUser, effectiveLevel) {
   const detailList = scopeIds.map(uid => {
     const s = stats[uid];
     const rate = s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0;
+    const avgScore = s.ratingScores.length > 0
+      ? Math.round((s.ratingScores.reduce((a, b) => a + b, 0) / s.ratingScores.length) * 10) / 10
+      : 0;
     return {
       _id: uid,
       name: metaMap[uid].name,
@@ -163,6 +179,7 @@ async function computeReport(event, currentUser, effectiveLevel) {
       total: s.total,
       completed: s.completed,
       rate,
+      avgScore,
       tasks: s.tasks
     };
   }).sort((a, b) => b.total - a.total);
@@ -173,6 +190,10 @@ async function computeReport(event, currentUser, effectiveLevel) {
   const totalHours = Math.round(detailList.reduce((acc, d) => acc + stats[d._id].hours, 0));
   const memberCount = scopeIds.length;
   const avgPerPerson = memberCount > 0 ? Math.round((totalTasks / memberCount) * 10) / 10 : 0;
+  const allRatingScores = scopeIds.flatMap(uid => stats[uid].ratingScores);
+  const avgScore = allRatingScores.length > 0
+    ? Math.round((allRatingScores.reduce((a, b) => a + b, 0) / allRatingScores.length) * 10) / 10
+    : 0;
 
   return {
     summary: {
@@ -180,6 +201,7 @@ async function computeReport(event, currentUser, effectiveLevel) {
       completedTasks,
       totalHours,
       avgPerPerson,
+      avgScore,
       memberCount
     },
     detailList
@@ -187,7 +209,7 @@ async function computeReport(event, currentUser, effectiveLevel) {
 }
 
 function emptySummary() {
-  return { totalTasks: 0, completedTasks: 0, totalHours: 0, avgPerPerson: 0, memberCount: 0 };
+  return { totalTasks: 0, completedTasks: 0, totalHours: 0, avgPerPerson: 0, avgScore: 0, memberCount: 0 };
 }
 
 exports.main = async (event, context) => {
@@ -224,3 +246,4 @@ exports.main = async (event, context) => {
 // 导致 CloudBase 调用入口 main 丢失。这里追加导出而非整体替换。
 exports.computeReport = computeReport;
 exports.getDateRange = getDateRange;
+exports.computeAvgScore = computeAvgScore;

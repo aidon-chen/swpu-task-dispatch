@@ -353,15 +353,15 @@ center_director → key-generate 页 → generateKey 云函数 → keys 集合
 - **验收门禁**：通知可在消息中心看到并标记已读；到点任务收到提醒；值班日历有状态。
 
 ### 里程碑 M1（扩员与统计，建议 1–1.5 周）— P1
-- [ ] M4-1~M4-4：`generateKey` 云函数 + `key-generate` 页
-- [ ] M5-1~M5-5：`getReport`/`exportReport` + `statistics` 图表与导出
-- [ ] M6-1~M6-4：`getNewsCache`/`crawlNews` + `news-match` 页
-- [ ] M10 启动：env.js 实装 + 部署脚本（与 M1 并行）
+- [x] M4-1~M4-4：`generateKey` 云函数 + `key-generate` 页（2026-07-19）
+- [x] M5-1~M5-5：`getReport`/`exportReport` + `statistics` 图表与导出（2026-07-19）
+- [x] M6-1~M6-4：`getNewsCache`/`crawlNews` + `news-match` 页（2026-07-19）
+- [x] M10 启动：env.js 实装 + 部署脚本（与 M1 并行，2026-07-19）
 - **验收门禁**：主任能生成正式密钥并分发激活；能导出学期统计；任务可匹配新闻。
 
 ### 里程碑 M2（体验增强，建议 1 周）— P2
-- [ ] M7 评价反馈
-- [ ] M8 任务模板
+- [x] M7 评价反馈（2026-08-26：`rateTask` 云函数 + task-detail 星级评价 UI + getReport 均分聚合 + 12+2 测试）
+- [x] M8 任务模板（2026-07-19：createTask 存模板/从模板实例化 + getTemplates + create-task 页）
 - [ ] M9 高级搜索
 - [ ] M10-3 数据初始化清单补全
 - **验收门禁**：任务可评价、可存模板、列表可多维筛选；三环境可独立部署。

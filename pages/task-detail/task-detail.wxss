@@ -145,3 +145,54 @@
   gap: 16rpx;
   margin-top: 32rpx;
 }
+
+/* ===== 任务评价（M7） ===== */
+.rate-summary {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 16rpx;
+}
+
+.rate-score {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #FA8C16;
+  margin-right: 12rpx;
+}
+
+.rate-count {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.rate-mine {
+  background: #FFF7E6;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.rate-mine-score {
+  font-size: 28rpx;
+  color: #D46B08;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.rate-stars {
+  display: flex;
+  justify-content: center;
+  gap: 24rpx;
+  padding: 12rpx 0;
+}
+
+.rate-star {
+  font-size: 64rpx;
+  line-height: 1;
+  color: #DDD;
+  transition: color 0.15s;
+}
+
+.rate-star-active {
+  color: #FA8C16;
+}

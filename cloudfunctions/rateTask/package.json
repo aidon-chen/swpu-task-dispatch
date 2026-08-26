@@ -1,0 +1,9 @@
+{
+  "name": "rateTask",
+  "version": "1.0.0",
+  "description": "任务评价云函数（M7）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

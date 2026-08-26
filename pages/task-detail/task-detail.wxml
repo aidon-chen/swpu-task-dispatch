@@ -75,6 +75,22 @@
     <view class="detail-desc">{{task.deliverables}}</view>
   </view>
 
+  <!-- 任务评价（M7） -->
+  <view class="card" wx:if="{{avgScore > 0 || canRate || myRating}}">
+    <view class="card-title">⭐ 任务评价</view>
+    <view wx:if="{{avgScore > 0}}" class="rate-summary">
+      <text class="rate-score">{{avgScore}}</text>
+      <text class="rate-count">（{{ratingCount}} 人评价）</text>
+    </view>
+    <view wx:if="{{myRating}}" class="rate-mine">
+      <view class="rate-mine-score">我的评分：{{myRating.score}} 分</view>
+      <view wx:if="{{myRating.comment}}" class="detail-desc">{{myRating.comment}}</view>
+    </view>
+    <button wx:if="{{canRate}}" class="btn btn-primary btn-block mt-16" bindtap="onOpenRateModal">
+      {{myRating ? '修改评价' : '去评价'}}
+    </button>
+  </view>
+
   <!-- 操作栏 -->
   <view class="detail-actions" wx:if="{{!actionLoading}}">
     <!-- 成员操作 -->
@@ -115,6 +131,33 @@
       <view class="detail-modal-footer">
         <button class="btn btn-outline" bindtap="onCloseAdjust">取消</button>
         <button class="btn btn-primary ml-16 flex-1" loading="{{actionLoading}}" disabled="{{!adjustReason}}" bindtap="onSubmitAdjust">提交申请</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 评价弹窗（M7） -->
+  <view class="detail-modal" wx:if="{{showRateModal}}" catchtap="onCloseRateModal">
+    <view class="detail-modal-content" catchtap="noop">
+      <view class="detail-modal-title">评价任务</view>
+      <view class="form-item">
+        <view class="form-label">评分</view>
+        <view class="rate-stars">
+          <text
+            wx:for="{{rateStars}}"
+            wx:key="*this"
+            data-score="{{item}}"
+            bindtap="onRateStarTap"
+            class="rate-star {{rateScore >= item ? 'rate-star-active' : ''}}"
+          >{{rateScore >= item ? '★' : '☆'}}</text>
+        </view>
+      </view>
+      <view class="form-item">
+        <view class="form-label">评价（选填）</view>
+        <textarea class="form-textarea" placeholder="说说任务完成情况..." value="{{rateComment}}" bindinput="onRateCommentInput" maxlength="200"/>
+      </view>
+      <view class="detail-modal-footer">
+        <button class="btn btn-outline" bindtap="onCloseRateModal">取消</button>
+        <button class="btn btn-primary ml-16 flex-1" loading="{{actionLoading}}" disabled="{{!rateScore}}" bindtap="onSubmitRate">提交评价</button>
       </view>
     </view>
   </view>

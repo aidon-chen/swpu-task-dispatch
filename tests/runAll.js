@@ -31,7 +31,8 @@ const testFiles = [
   'crawlNews.test.js',
   'getNewsCache.test.js',
   'getReport.test.js',
-  'exportReport.test.js'
+  'exportReport.test.js',
+  'rateTask.test.js'
 ];
 
 let hasFailure = false;

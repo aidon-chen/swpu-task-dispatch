@@ -49,6 +49,10 @@
       <text class="stats-summary-num" style="color: #2196F3">{{summary.avgPerPerson}}</text>
       <text class="stats-summary-label">人均任务</text>
     </view>
+    <view class="stats-summary-item">
+      <text class="stats-summary-num" style="color: #FA8C16">{{summary.avgScore || '-'}}</text>
+      <text class="stats-summary-label">平均评分</text>
+    </view>
   </view>
 
   <!-- 视图切换 -->
@@ -82,7 +86,7 @@
         <view class="stats-list-item card">
           <view class="flex-between mb-8">
             <text class="stats-list-name">{{item.name}}</text>
-            <text class="stats-list-count">{{item.total}} 次 · 完成 {{item.completed}}（{{item.rate}}%）</text>
+            <text class="stats-list-count">{{item.total}} 次 · 完成 {{item.completed}}（{{item.rate}}%）· 评分 {{item.avgScore || '-'}}</text>
           </view>
           <view wx:if="{{item.tasks.length > 0}}" class="stats-list-tasks">
             <block wx:for="{{item.tasks}}" wx:key="_id" wx:for-item="t">

@@ -29,7 +29,8 @@ Page({
       totalTasks: 0,
       completedTasks: 0,
       totalHours: 0,
-      avgPerPerson: 0
+      avgPerPerson: 0,
+      avgScore: 0
     },
     /** 图表数据 */
     chartData: null,

@@ -266,6 +266,23 @@ async function exportReport(params = {}) {
   return callCloudFunction('exportReport', data);
 }
 
+/**
+ * 任务评价（M7）
+ * 任务完成后，被指派成员 / 主任打分(1-5) + 文字评价；重复提交覆盖本人旧评
+ * @param {Object} params - { taskId, score, comment? }
+ * @returns {Promise<Object>} { code, data: { taskId, avgScore, ratingCount } }
+ */
+async function rateTask(params = {}) {
+  const data = { ...params };
+  const user = require('./auth.js').getCurrentUser();
+  if (user && user.isDebugLogin && user.role) {
+    data.debugMode = true;
+    data.debugRole = user.role;
+    console.log('[API] 调试模式：向 rateTask 附加调试角色', user.role);
+  }
+  return callCloudFunction('rateTask', data);
+}
+
 module.exports = {
   callCloudFunction,
   login,
@@ -287,5 +304,6 @@ module.exports = {
   getReport,
   crawlNews,
   getNewsCache,
-  exportReport
+  exportReport,
+  rateTask
 };
