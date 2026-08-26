@@ -2,7 +2,7 @@
 <view class="login-container">
   <!-- 欢迎区域 -->
   <view class="login-header">
-    <view class="login-logo">📸</view>
+    <t-icon class="login-logo" name="camera-filled" size="112rpx" color="#FFFFFF"/>
     <view class="login-title">任务派发系统</view>
     <view class="login-subtitle">西南石油大学视觉中心</view>
   </view>
@@ -47,7 +47,7 @@
       <!-- 测试模式：调试登录入口 -->
       <view wx:if="{{isTestMode}}" class="debug-section mt-24">
         <view class="debug-toggle" bindtap="onToggleDebugLogin">
-          <text class="debug-icon">🧪</text>
+          <t-icon class="debug-icon" name="bug" size="32rpx"/>
           <text class="debug-text">调试角色登录</text>
           <text class="debug-arrow">{{showDebugLogin ? '▲' : '▼'}}</text>
         </view>
@@ -86,10 +86,10 @@
           data-dept="{{item.value}}"
           bindtap="onSelectDepartment"
         >
-          <view class="login-dept-icon">{{item.value === 'photography' ? '📷' : '🎬'}}</view>
+          <t-icon class="login-dept-icon" name="{{item.value === 'photography' ? 'camera' : 'movie-clapper'}}" size="64rpx"/>
           <view class="login-dept-label">{{item.label}}</view>
           <view class="login-dept-desc">{{item.desc}}</view>
-          <view wx:if="{{selectedDepartment === item.value}}" class="login-dept-check">✓</view>
+          <t-icon wx:if="{{selectedDepartment === item.value}}" class="login-dept-check" name="check-circle-filled" size="28rpx" color="#FFFFFF"/>
         </view>
       </view>
 
@@ -111,7 +111,10 @@
     <view class="login-key-section mt-32">
       <view class="divider"></view>
       <view class="login-key-toggle" bindtap="onToggleKeyInput">
-        <text>🔑 使用权限密钥升级角色</text>
+        <view class="flex-row">
+          <t-icon class="icon-inline" name="key" size="32rpx"/>
+          <text>使用权限密钥升级角色</text>
+        </view>
         <text class="login-key-arrow">{{showKeyInput ? '▲' : '▼'}}</text>
       </view>
 

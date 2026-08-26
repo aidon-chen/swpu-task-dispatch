@@ -1,27 +1,36 @@
 <view class="container">
   <view class="card">
-    <view class="icon">🗄️</view>
+    <t-icon class="icon" name="data" size="96rpx" color="#1976D2"/>
     <view class="title">数据库初始化</view>
     <view class="desc">首次使用前需要创建数据库集合（users, tasks, keys 等）</view>
 
     <view class="status-box status-{{status}}">
       <text wx:if="{{status === 'ready'}}">点击下方按钮开始初始化</text>
       <text wx:if="{{status === 'loading'}}">⏳ {{message}}</text>
-      <text wx:if="{{status === 'success'}}">✅ {{message}}</text>
-      <text wx:if="{{status === 'error'}}">❌ {{message}}</text>
+      <view wx:if="{{status === 'success'}}" class="flex-row">
+        <t-icon class="icon-inline" name="check-circle" size="28rpx" color="#4CAF50"/>
+        <text>{{message}}</text>
+      </view>
+      <view wx:if="{{status === 'error'}}" class="flex-row">
+        <t-icon class="icon-inline" name="close-circle" size="28rpx" color="#F44336"/>
+        <text>{{message}}</text>
+      </view>
     </view>
 
     <view class="results" wx:if="{{results}}">
       <view class="result-item" wx:if="{{results.created.length}}">
-        <text class="label">✅ 新创建:</text>
+        <t-icon class="icon-inline" name="check-circle" size="24rpx" color="#4CAF50"/>
+        <text class="label">新创建:</text>
         <text>{{results.created.join(', ')}}</text>
       </view>
       <view class="result-item" wx:if="{{results.skipped.length}}">
-        <text class="label">⏭️ 已存在:</text>
+        <t-icon class="icon-inline" name="folder" size="24rpx" color="#FF9800"/>
+        <text class="label">已存在:</text>
         <text>{{results.skipped.join(', ')}}</text>
       </view>
       <view class="result-item error" wx:if="{{results.errors.length}}">
-        <text class="label">❌ 失败:</text>
+        <t-icon class="icon-inline" name="close-circle" size="24rpx" color="#F44336"/>
+        <text class="label">失败:</text>
         <text wx:for="{{results.errors}}" wx:key="name">{{item.name}}({{item.message}})</text>
       </view>
     </view>

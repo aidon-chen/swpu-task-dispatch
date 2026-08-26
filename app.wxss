@@ -313,3 +313,27 @@ page {
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }
+
+/* ========== tdesign 图标公共样式（t-icon 组件） ==========
+ * 说明：类作用于 t-icon 组件根节点（页面作用域可命中）；
+ * 图标大小/颜色通过组件 size / color 属性传入（组件 API，最可靠）。
+ */
+/* 卡片/区块标题行内图标（蓝色，配合 36rpx 大小） */
+.icon-card-title {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8rpx;
+}
+
+/* 行内小图标（按钮、说明文字等，配合 32rpx 大小） */
+.icon-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6rpx;
+}
+
+/* 大状态图标（成功/失败/空状态等，配合 96rpx 大小） */
+.icon-status {
+  display: inline-block;
+  vertical-align: middle;
+}

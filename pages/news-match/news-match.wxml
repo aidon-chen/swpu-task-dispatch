@@ -2,7 +2,7 @@
 <view class="container">
   <!-- 搜索区域 -->
   <view class="card">
-    <view class="card-title">🔍 新闻匹配查询</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="search" size="36rpx" color="#1976D2"/>新闻匹配查询</view>
 
     <!-- 关联任务信息 -->
     <view wx:if="{{taskTitle}}" class="news-task-info mb-16">
@@ -34,13 +34,13 @@
       disabled="{{crawling}}"
       bindtap="loadNewsMatch"
     >
-      {{crawling ? '正在匹配新闻...' : '🔄 重新匹配'}}
+      <t-icon wx:if="{{!crawling}}" class="icon-inline" name="refresh" size="30rpx"/>{{crawling ? '正在匹配新闻...' : '重新匹配'}}
     </button>
   </view>
 
   <!-- 缓存标记 -->
   <view wx:if="{{fromCache && newsList.length > 0}}" class="news-cache-tip">
-    💾 使用缓存结果（24小时内有效）
+    <t-icon class="icon-inline" name="save" size="28rpx"/>使用缓存结果（24小时内有效）
   </view>
 
   <!-- 匹配结果列表 -->
@@ -58,7 +58,7 @@
         <view class="flex-between">
           <text wx:if="{{item.publishDate}}" class="news-item-date">{{item.publishDate}}</text>
           <view class="news-item-actions">
-            <text class="news-item-link" data-url="{{item.url}}" catchtap="onCopyLink">📋 复制链接</text>
+            <view class="news-item-link" data-url="{{item.url}}" catchtap="onCopyLink"><t-icon class="icon-inline" name="copy" size="28rpx"/>复制链接</view>
             <text class="news-item-view ml-16">查看详情 ›</text>
           </view>
         </view>
@@ -68,7 +68,7 @@
 
   <!-- 空结果 -->
   <view wx:if="{{!loading && newsList.length === 0 && taskTitle}}" class="empty-state">
-    <view class="icon">📰</view>
+    <t-icon class="icon-status" name="article" size="96rpx" color="#BDBDBD"/>
     <view class="text">未找到匹配的新闻报道</view>
     <view class="text" style="font-size: 24rpx; margin-top: 8rpx;">
       可能原因：新闻尚未发布、关键词不匹配、或网络问题
@@ -77,7 +77,7 @@
 
   <!-- 初始状态 -->
   <view wx:if="{{!taskTitle && !taskId}}" class="empty-state">
-    <view class="icon">🔍</view>
+    <t-icon class="icon-status" name="search" size="96rpx" color="#BDBDBD"/>
     <view class="text">输入关键词查询相关新闻</view>
     <view class="text" style="font-size: 24rpx; margin-top: 8rpx; color: var(--text-hint);">
       数据来源：西南石油大学新闻网

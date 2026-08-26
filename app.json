@@ -57,7 +57,9 @@
       },
       {
         "pagePath": "pages/test-tools/test-tools",
-        "text": "测试"
+        "text": "测试",
+        "iconPath": "images/tab-test.png",
+        "selectedIconPath": "images/tab-test-active.png"
       }
     ]
   },
@@ -71,7 +73,9 @@
     "chooseAddress"
   ],
   "__usePrivacyCheck__": true,
-  "usingComponents": {},
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  },
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
 }

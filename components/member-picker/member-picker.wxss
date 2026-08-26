@@ -32,6 +32,13 @@
   gap: 12rpx;
 }
 
+/* 按钮内图标（组件内不继承 app.wxss 样式，需本地定义） */
+.member-picker__btn-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6rpx;
+}
+
 /* 成员列表 */
 .member-picker__list {
   flex: 1;

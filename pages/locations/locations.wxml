@@ -25,7 +25,7 @@
 
   <block wx:elif="{{locations.length === 0}}">
     <view class="empty-state">
-      <view class="icon">📍</view>
+      <t-icon class="icon-status" name="map-marked" size="96rpx" color="#BDBDBD"/>
       <view class="text">暂无机位数据</view>
       <view wx:if="{{isDirector}}" class="text" style="font-size: 24rpx; margin-top: 8rpx;">
         点击右下角按钮添加机位
@@ -49,7 +49,7 @@
           src="{{item.images[0]}}"
           mode="aspectFill"
         />
-        <view wx:else class="location-card-placeholder">📍</view>
+        <t-icon wx:else class="location-card-placeholder" name="map-marked" size="64rpx" color="#BDBDBD"/>
 
         <!-- 机位信息 -->
         <view class="location-card-body">
@@ -62,7 +62,7 @@
 
         <!-- 主任操作 -->
         <view wx:if="{{isDirector}}" class="location-card-actions">
-          <text class="location-card-action" data-id="{{item._id}}" catchtap="onDelete">🗑 删除</text>
+          <view class="location-card-action" data-id="{{item._id}}" catchtap="onDelete"><t-icon class="icon-inline" name="delete" size="28rpx"/>删除</view>
         </view>
       </view>
     </view>

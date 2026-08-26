@@ -14,7 +14,7 @@
   <view class="member-picker__toolbar" wx:if="{{showRandom}}">
     <text class="member-picker__count">已选 {{selectedIds.length}} 人</text>
     <view class="member-picker__toolbar-actions">
-      <button class="btn btn-sm btn-outline" size="mini" bindtap="onOpenRandom">🎲 随机选择</button>
+      <button class="btn btn-sm btn-outline" size="mini" bindtap="onOpenRandom"><t-icon class="member-picker__btn-icon" name="refresh" size="28rpx"/>随机选择</button>
       <button
         wx:if="{{selectedIds.length > 0}}"
         class="btn btn-sm btn-outline"
@@ -74,7 +74,7 @@
           >不可用</text>
 
           <!-- 选中标记 -->
-          <view wx:if="{{selectedIds.indexOf(item._id) >= 0}}" class="member-picker__check">✓</view>
+          <t-icon wx:if="{{selectedIds.indexOf(item._id) >= 0}}" class="member-picker__check" name="check-circle-filled" size="28rpx" color="#FFFFFF"/>
         </view>
       </view>
     </block>

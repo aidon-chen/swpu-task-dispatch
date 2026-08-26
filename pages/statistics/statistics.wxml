@@ -59,7 +59,7 @@
   <view class="flex-between mb-16">
     <view class="card-title" style="margin-bottom: 0;">成员明细</view>
     <view class="stats-view-toggle" bindtap="onToggleView">
-      {{showChart ? '📋 列表' : '📊 条形'}}
+      <t-icon class="icon-inline" name="{{showChart ? 'view-list' : 'chart-bar'}}" size="30rpx"/>{{showChart ? '列表' : '条形'}}
     </view>
   </view>
 
@@ -105,7 +105,7 @@
   </block>
 
   <!-- 导出按钮 -->
-  <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onExport">📥 导出报表（复制到剪贴板）</button>
+  <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onExport"><t-icon class="icon-inline" name="export" size="32rpx"/>导出报表（复制到剪贴板）</button>
 
   <view style="height: 60rpx;"></view>
 </view>

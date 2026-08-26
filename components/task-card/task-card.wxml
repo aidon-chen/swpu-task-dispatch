@@ -12,15 +12,15 @@
   <!-- 信息行 -->
   <view class="task-card__info" wx:if="{{!compact}}">
     <view class="task-card__info-item">
-      <text class="task-card__icon">📋</text>
+      <t-icon class="task-card__icon" name="task" size="28rpx"/>
       <text>{{typeLabel}}</text>
     </view>
     <view class="task-card__info-item">
-      <text class="task-card__icon">🕐</text>
+      <t-icon class="task-card__icon" name="time" size="28rpx"/>
       <text>{{formattedStartTime}}</text>
     </view>
     <view class="task-card__info-item" wx:if="{{task.location}}">
-      <text class="task-card__icon">📍</text>
+      <t-icon class="task-card__icon" name="location" size="28rpx"/>
       <text class="text-ellipsis">{{task.location}}</text>
     </view>
     <view class="task-card__info-item" wx:if="{{task.isCrossDepartment}}">
@@ -48,6 +48,6 @@
     </block>
 
     <!-- 新闻匹配按钮 -->
-    <button class="btn btn-sm btn-outline" size="mini" bindtap="onViewNews">📰 新闻匹配</button>
+    <button class="btn btn-sm btn-outline" size="mini" bindtap="onViewNews"><t-icon class="task-card__btn-icon" name="article" size="28rpx"/>新闻匹配</button>
   </view>
 </view>

@@ -15,7 +15,7 @@
 
   <!-- 时间信息 -->
   <view class="card">
-    <view class="card-title">🕐 时间安排</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="time" size="36rpx" color="#1976D2"/>时间安排</view>
     <view class="detail-info-row">
       <text class="detail-info-label">开始时间</text>
       <text class="detail-info-value">{{task.startTime}}</text>
@@ -28,7 +28,7 @@
 
   <!-- 地点与联络 -->
   <view class="card" wx:if="{{task.location || locationInfo}}">
-    <view class="card-title">📍 地点与联络</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="location" size="36rpx" color="#1976D2"/>地点与联络</view>
     <view class="detail-info-row" wx:if="{{task.location}}">
       <text class="detail-info-label">任务地点</text>
       <text class="detail-info-value">{{task.location}}</text>
@@ -45,7 +45,7 @@
 
   <!-- 指派人员 -->
   <view class="card">
-    <view class="card-title">👥 指派人员</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="user" size="36rpx" color="#1976D2"/>指派人员</view>
     <view class="detail-members">
       <block wx:for="{{assignedMembers}}" wx:key="_id">
         <view class="detail-member-item">
@@ -65,19 +65,19 @@
 
   <!-- 任务描述 -->
   <view class="card" wx:if="{{task.description}}">
-    <view class="card-title">📝 任务描述</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="edit" size="36rpx" color="#1976D2"/>任务描述</view>
     <view class="detail-desc">{{task.description}}</view>
   </view>
 
   <!-- 成果要求 -->
   <view class="card" wx:if="{{task.deliverables}}">
-    <view class="card-title">📦 成果要求</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="send" size="36rpx" color="#1976D2"/>成果要求</view>
     <view class="detail-desc">{{task.deliverables}}</view>
   </view>
 
   <!-- 任务评价（M7） -->
   <view class="card" wx:if="{{avgScore > 0 || canRate || myRating}}">
-    <view class="card-title">⭐ 任务评价</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="star" size="36rpx" color="#1976D2"/>任务评价</view>
     <view wx:if="{{avgScore > 0}}" class="rate-summary">
       <text class="rate-score">{{avgScore}}</text>
       <text class="rate-count">（{{ratingCount}} 人评价）</text>
@@ -117,7 +117,7 @@
     </block>
 
     <!-- 新闻匹配 -->
-    <button class="btn btn-outline btn-block mt-16" bindtap="onViewNews">📰 查看新闻匹配</button>
+    <button class="btn btn-outline btn-block mt-16" bindtap="onViewNews"><t-icon class="icon-inline" name="article" size="32rpx"/>查看新闻匹配</button>
   </view>
 
   <!-- 调整交付状态弹窗 -->

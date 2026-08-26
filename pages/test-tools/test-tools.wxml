@@ -2,7 +2,7 @@
 <view class="container">
   <!-- 状态卡 -->
   <view class="card">
-    <view class="card-title">🧪 测试模式</view>
+    <view class="card-title"><t-icon class="icon-card-title" name="bug" size="36rpx" color="#1976D2"/>测试模式</view>
     <view class="status-row">
       <text class="status-label">状态</text>
       <text class="status-value {{isTestMode ? 'status-on' : 'status-off'}}">{{isTestMode ? '已开启' : '已关闭'}}</text>
@@ -21,7 +21,7 @@
   <block wx:if="{{isTestMode}}">
     <!-- S2 快速新建用户 -->
     <view class="card">
-      <view class="card-title">👥 快速新建测试用户</view>
+      <view class="card-title"><t-icon class="icon-card-title" name="user-add" size="36rpx" color="#1976D2"/>快速新建测试用户</view>
       <view class="card-desc">生成 member 测试用户（摄影/视频各半），用于任务指派与成员展示</view>
       <view class="count-chips">
         <view
@@ -37,7 +37,7 @@
 
     <!-- S3 生成测试任务 -->
     <view class="card">
-      <view class="card-title">📋 生成测试任务</view>
+      <view class="card-title"><t-icon class="icon-card-title" name="task" size="36rpx" color="#1976D2"/>生成测试任务</view>
       <view class="card-desc">自动确保测试用户存在，覆盖 5 状态/2 部门/2 优先级/跨月时间</view>
       <view class="count-chips">
         <view
@@ -53,7 +53,7 @@
 
     <!-- S4 清理测试数据 -->
     <view class="card">
-      <view class="card-title">🗑 清理测试数据</view>
+      <view class="card-title"><t-icon class="icon-card-title" name="delete" size="36rpx" color="#1976D2"/>清理测试数据</view>
       <view class="card-desc">删除全部带 [测试] 标记的任务与用户，不影响真实数据</view>
       <button class="btn btn-danger btn-block" loading="{{actionLoading}}" bindtap="onClean">一键清理测试数据</button>
     </view>

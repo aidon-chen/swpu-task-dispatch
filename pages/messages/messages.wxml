@@ -39,7 +39,7 @@
 
   <!-- 空态 -->
   <view class="msg-empty" wx:if="{{empty}}">
-    <view class="msg-empty-icon">📭</view>
+    <t-icon class="msg-empty-icon" name="chat-message" size="96rpx" color="#BDBDBD"/>
     <view class="msg-empty-title">暂无通知</view>
     <view class="msg-empty-desc">任务指派、提醒与完成动态会在这里显示</view>
     <button class="msg-empty-btn" bindtap="onGoTasks">去查看任务</button>

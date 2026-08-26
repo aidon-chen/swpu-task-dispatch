@@ -36,7 +36,7 @@
       />
     </view>
     <view class="key-hint">
-      💡 密钥由视觉中心主任在管理后台生成，每个密钥只能使用一次。验证成功后，你的角色将自动升级。
+      <t-icon class="icon-inline" name="info-circle" size="28rpx" color="#2196F3"/>密钥由视觉中心主任在管理后台生成，每个密钥只能使用一次。验证成功后，你的角色将自动升级。
     </view>
 
     <button
@@ -53,7 +53,7 @@
   <view wx:if="{{result}}" class="card">
     <block wx:if="{{result.success}}">
       <view class="key-result key-result--success">
-        <view class="key-result-icon">✅</view>
+        <t-icon class="key-result-icon" name="check-circle-filled" size="96rpx" color="#4CAF50"/>
         <view class="key-result-title">验证成功！</view>
         <view class="key-result-desc">
           你的角色已升级为 <text class="key-result-role">{{result.roleName}}</text>
@@ -62,7 +62,7 @@
     </block>
     <block wx:else>
       <view class="key-result key-result--fail">
-        <view class="key-result-icon">❌</view>
+        <t-icon class="key-result-icon" name="close-circle-filled" size="96rpx" color="#F44336"/>
         <view class="key-result-title">验证失败</view>
         <view class="key-result-desc">{{result.message}}</view>
       </view>

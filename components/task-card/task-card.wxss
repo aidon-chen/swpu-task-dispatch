@@ -59,8 +59,16 @@
 }
 
 .task-card__icon {
+  display: inline-block;
+  vertical-align: middle;
   margin-right: 6rpx;
-  font-size: 22rpx;
+}
+
+/* 按钮内图标（组件内不继承 app.wxss 样式，需本地定义） */
+.task-card__btn-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6rpx;
 }
 
 /* 描述 */
