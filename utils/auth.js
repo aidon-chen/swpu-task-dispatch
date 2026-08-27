@@ -89,14 +89,14 @@ function isMember() {
 }
 
 /**
- * 检查当前用户是否为调试员账号（role='debug' 或本地 isDebug 标记）
+ * 检查当前用户是否为调试员账号（role='debug'、数据库 isDebugUser 标记、或本地 isDebug 会话标记）
  * 调试员可独占测试入口，并在测试模式下扮演任意角色
  * @returns {boolean}
  */
 function isDebugUser() {
   const user = getCurrentUser();
   if (!user) return false;
-  return user.role === 'debug' || user.isDebug === true;
+  return user.role === 'debug' || user.isDebugUser === true || user.isDebug === true;
 }
 
 /**

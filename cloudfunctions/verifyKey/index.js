@@ -69,7 +69,7 @@ exports.main = async (event, context) => {
     const user = users[0];
 
     // 调试员账号跳过密钥升级（它已可扮演任意角色，防止密钥流程覆盖其 role='debug' 身份）
-    if (user.role === 'debug') {
+    if ((user.role === 'debug' || user.isDebugUser === true)) {
       return Response.paramError('调试员账号无需密钥升级');
     }
 

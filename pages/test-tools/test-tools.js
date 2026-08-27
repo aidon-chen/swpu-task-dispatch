@@ -43,7 +43,7 @@ Page({
   loadStatus() {
     const status = testMode.getStatus();
     const user = auth.getCurrentUser();
-    const isDebug = !!user && (user.role === 'debug' || user.isDebug === true);
+    const isDebug = !!user && (user.role === 'debug' || user.isDebugUser === true || user.isDebug === true);
     this.setData({
       isTestMode: status.enabled && isDebug,
       envVersion: status.envVersion,

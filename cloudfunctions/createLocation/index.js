@@ -17,7 +17,7 @@ const TEST_CONFIG = require('./testConfig.js');
 function resolveEffectiveRole(user, event) {
   if (
     TEST_CONFIG.enabled &&
-    user.role === 'debug' &&
+    (user.role === 'debug' || user.isDebugUser === true) &&
     event.debugMode &&
     event.debugRole &&
     ROLE_LEVEL[event.debugRole]

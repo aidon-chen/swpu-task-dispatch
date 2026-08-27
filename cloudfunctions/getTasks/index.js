@@ -33,7 +33,7 @@ exports.main = async (event, context) => {
 
     const user = users[0];
     // 调试员：测试模式（携带 debugRole）按扮演角色提权，否则等同 member
-    const effectiveRole = user.role === 'debug'
+    const effectiveRole = (user.role === 'debug' || user.isDebugUser === true)
       ? (event.debugMode && event.debugRole && ROLE_LEVEL[event.debugRole] ? event.debugRole : 'member')
       : user.role;
     const userLevel = ROLE_LEVEL[effectiveRole] || 0;

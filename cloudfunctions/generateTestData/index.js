@@ -218,29 +218,22 @@ async function cleanTestData() {
 }
 
 /**
- * 生成调试员账号（role='debug'）
- * 调试员可独占测试入口并在测试模式下扮演任意角色；按 openid 幂等跳过
+ * 给当前登录用户打「调试员」标记（isDebugUser: true，保留原角色）
+ * 调试员可独占测试入口、扮演任意角色；幂等（已标记则返回 existing）
  */
 async function generateDebugUser() {
   const usersCollection = db.collection('users');
-  const openid = 'debug-seed-openid';
-  const { total } = await usersCollection.where({ openid }).count();
-  if (total > 0) {
-    const { data } = await usersCollection.where({ openid }).limit(1).get();
-    return Response.ok({ existing: true, user: data[0] }, '调试员账号已存在');
+  const { OPENID } = cloud.getWXContext();
+  const { data: users } = await usersCollection.where({ openid: OPENID }).limit(1).get();
+  if (users.length === 0) {
+    return Response.paramError('当前用户不存在，请先登录');
   }
-  const seed = {
-    openid,
-    name: '调试员',
-    avatar: '',
-    department: 'photography',
-    role: 'debug',
-    semester: getCurrentSemester(),
-    createdAt: new Date().toISOString(),
-    testSeed: true
-  };
-  const { _id } = await usersCollection.add({ data: seed });
-  return Response.ok({ existing: false, user: { ...seed, _id } }, '调试员账号已创建');
+  const user = users[0];
+  if (user.isDebugUser === true) {
+    return Response.ok({ existing: true, user }, '当前账号已是调试员');
+  }
+  await usersCollection.doc(user._id).update({ data: { isDebugUser: true } });
+  return Response.ok({ existing: false, user: { ...user, isDebugUser: true } }, '已将当前账号标记为调试员');
 }
 
 exports.main = async (event) => {

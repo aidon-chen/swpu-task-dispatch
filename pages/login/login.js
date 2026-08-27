@@ -266,8 +266,8 @@ Page({
 
       const { user } = loginRes.result.data;
 
-      // 2. 仅调试员账号（库角色 role='debug'）可调试登录；普通账号拒绝
-      if (user.role !== 'debug') {
+      // 2. 仅调试员账号（库角色 role='debug' 或 isDebugUser 标记）可调试登录；普通账号拒绝
+      if (!(user.role === 'debug' || user.isDebugUser === true)) {
         wx.showToast({ title: '仅调试员账号可用', icon: 'none' });
         this.setData({ loading: false });
         return;

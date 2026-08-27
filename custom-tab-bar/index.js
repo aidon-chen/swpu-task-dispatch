@@ -60,7 +60,7 @@ Component({
       const status = testMode.getStatus();
       const isRelease = status.envVersion === 'release';
       const user = auth.getCurrentUser();
-      const isDebug = !!user && (user.role === 'debug' || user.isDebug === true);
+      const isDebug = !!user && (user.role === 'debug' || user.isDebugUser === true || user.isDebug === true);
 
       this.setData({
         list: (isRelease || !isDebug)
