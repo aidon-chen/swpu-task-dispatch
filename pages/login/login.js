@@ -45,8 +45,9 @@ Page({
     testModeStatus: null,
     /** 是否展开调试登录面板 */
     showDebugLogin: false,
-    /** 可选调试角色列表 */
+    /** 可选调试角色列表（调试员可扮演任意身份） */
     debugRoles: [
+      { value: 'member', label: '普通成员' },
       { value: 'photo_director', label: '摄影部主任' },
       { value: 'video_director', label: '视频部主任' },
       { value: 'center_director', label: '视觉中心主任' }
@@ -238,6 +239,7 @@ Page({
 
   /**
    * 调试角色登录
+   * 仅调试员账号（数据库 role='debug'）可用，可扮演任意身份（普通成员/主任）
    * 仅修改本地 storage/globalData，不写入数据库 users.role
    */
   async onDebugLogin() {
@@ -249,7 +251,7 @@ Page({
     this.setData({ loading: true });
 
     try {
-      // 1. 先走正常登录流程获取/创建用户（获取真实 openid 和 _id）
+      // 1. 先走正常登录流程获取/创建用户（获取真实 openid、_id 与数据库角色）
       const loginRes = await wx.cloud.callFunction({
         name: 'login',
         data: {
@@ -263,20 +265,29 @@ Page({
       }
 
       const { user } = loginRes.result.data;
+
+      // 2. 仅调试员账号（库角色 role='debug'）可调试登录；普通账号拒绝
+      if (user.role !== 'debug') {
+        wx.showToast({ title: '仅调试员账号可用', icon: 'none' });
+        this.setData({ loading: false });
+        return;
+      }
+
       const roleIndex = this.data.selectedDebugRole;
       const selectedRole = this.data.debugRoles[roleIndex].value;
 
-      // 2. 本地修改角色（不写入数据库）
+      // 3. 本地修改扮演角色（不写入数据库），标记调试员身份
       user.role = selectedRole;
+      user.isDebug = true; // 调试员账号标记（库角色为 debug，测试入口/越权依据）
       user.isDebugLogin = true; // 标记调试登录，供创建任务/机位时云端信任该角色
       storage.saveUserInfo(user);
 
-      // 3. 更新全局状态
+      // 4. 更新全局状态
       app.globalData.userInfo = user;
       app.globalData.isLoggedIn = true;
       app.globalData.openid = user._openid || user.openid || '';
 
-      console.log('[TEST_MODE] 调试登录成功，角色:', selectedRole);
+      console.log('[TEST_MODE] 调试员扮演角色登录成功，扮演:', selectedRole);
 
       wx.showToast({
         title: `调试登录：${selectedRole}`,

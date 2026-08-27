@@ -118,9 +118,9 @@ async function run() {
     assert.strictEqual(res.data.ratingCount, 2);
   });
 
-  // TC-124 调试角色信任：member 以 photo_director 身份评他人任务
+  // TC-124 调试角色信任：调试员（库角色 debug）以 photo_director 身份评他人任务
   await test('TC-124 调试角色信任生效', async () => {
-    seed({ users: USERS.slice(), tasks: [{ _id: 't_other', assignedTo: ['u_other'], status: 'completed', title: '别人任务' }] });
+    seed({ users: USERS.map(u => u._id === 'u_member' ? { ...u, role: 'debug' } : u), tasks: [{ _id: 't_other', assignedTo: ['u_other'], status: 'completed', title: '别人任务' }] });
     rateTestConfig.enabled = true;
     rateTestConfig.allowDebugRoleOverride = true;
     const res = await rateTask({ taskId: 't_other', score: 4, debugMode: true, debugRole: 'photo_director' });

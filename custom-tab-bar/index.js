@@ -8,6 +8,7 @@
  *      - enabled = false（正式版 release 强制关闭 / config 归位 false）→ 只渲染 4 个 tab
  */
 const testMode = require('../utils/testMode.js');
+const auth = require('../utils/auth.js');
 
 const ALL_TABS = [
   {
@@ -53,13 +54,18 @@ Component({
 
   lifetimes: {
     attached() {
-      // 测试 tab 显隐按「环境版本」判断（与 config/test.js 的 enabled 解耦）：
-      //   develop / trial（测试版）→ 显示 5 tab（含测试）
-      //   release（正式版）→ 只渲染 4 tab（测试 tab 自动隐藏）
+      // 测试 tab 显隐双条件（任一不满足即隐藏）：
+      //   ① 环境非 release（测试版 develop/trial 才显示；正式版自动隐藏）
+      //   ② 当前用户是调试员账号（role='debug' / isDebug 标记；普通账号含主任不可见）
       const status = testMode.getStatus();
       const isRelease = status.envVersion === 'release';
+      const user = auth.getCurrentUser();
+      const isDebug = !!user && (user.role === 'debug' || user.isDebug === true);
+
       this.setData({
-        list: isRelease ? ALL_TABS.filter(function (t) { return !t.testOnly; }) : ALL_TABS
+        list: (isRelease || !isDebug)
+          ? ALL_TABS.filter(function (t) { return !t.testOnly; })
+          : ALL_TABS
       });
     }
   },

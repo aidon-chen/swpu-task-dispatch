@@ -17,6 +17,8 @@ const USERS = [
   { _id: 'u_dir', openid: 'dir-openid', name: '王五', department: 'photography', role: 'photo_director' },
   { _id: 'u_center', openid: 'center-openid', name: '赵六', department: 'video', role: 'center_director' }
 ];
+// 调试用例：当前用户（test-openid）为调试员（库角色 debug），可扮演任意角色
+const DBG_USERS = USERS.map(u => u._id === 'u_member' ? { ...u, role: 'debug' } : u);
 const TASKS = [
   { _id: 't1', assignedTo: ['u_member'], status: 'completed', createdAt: '2026-07-10', startTime: '2026-07-10T09:00:00', endTime: '2026-07-10T12:00:00' },
   { _id: 't2', assignedTo: ['u_member', 'u_other'], status: 'ongoing', createdAt: '2026-07-12', startTime: '2026-07-12T09:00:00', endTime: '2026-07-12T11:00:00' },
@@ -54,9 +56,9 @@ async function run() {
     assert.strictEqual(res.data.summary.avgPerPerson, 2, '人均应为 2.0');
   });
 
-  // TC-102 摄影部主任看到本部门（以 debugRole 覆盖验证部门范围）
+  // TC-102 摄影部主任看到本部门（调试员以 debugRole 覆盖验证部门范围）
   await test('TC-102 摄影部主任看到本部门(摄影部)', async () => {
-    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    seed({ users: DBG_USERS.slice(), tasks: TASKS.slice() });
     reportTestConfig.enabled = true;
     reportTestConfig.allowDebugRoleOverride = true;
     const res = await getReport({ ...PERIOD, debugMode: true, debugRole: 'photo_director' });
@@ -70,7 +72,7 @@ async function run() {
 
   // TC-103 中心主任看全部
   await test('TC-103 中心主任看到全部成员', async () => {
-    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    seed({ users: DBG_USERS.slice(), tasks: TASKS.slice() });
     reportTestConfig.enabled = true;
     reportTestConfig.allowDebugRoleOverride = true;
     const res = await getReport({ ...PERIOD, debugMode: true, debugRole: 'center_director' });
@@ -88,9 +90,9 @@ async function run() {
     assert.strictEqual(res.code, 3, '应 notFound');
   });
 
-  // TC-106 调试角色越权（testConfig 开启时信任前端角色）
+  // TC-106 调试角色越权（调试员库角色 debug 时信任前端角色）
   await test('TC-106 调试角色越权生效', async () => {
-    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    seed({ users: DBG_USERS.slice(), tasks: TASKS.slice() });
     reportTestConfig.enabled = true;
     reportTestConfig.allowDebugRoleOverride = true;
     const res = await getReport({ ...PERIOD, debugMode: true, debugRole: 'photo_director' });

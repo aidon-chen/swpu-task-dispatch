@@ -217,8 +217,34 @@ async function cleanTestData() {
   return Response.ok({ removedTasks, removedUsers }, `已清理 ${removedTasks} 个测试任务、${removedUsers} 个测试用户`);
 }
 
+/**
+ * 生成调试员账号（role='debug'）
+ * 调试员可独占测试入口并在测试模式下扮演任意角色；按 openid 幂等跳过
+ */
+async function generateDebugUser() {
+  const usersCollection = db.collection('users');
+  const openid = 'debug-seed-openid';
+  const { total } = await usersCollection.where({ openid }).count();
+  if (total > 0) {
+    const { data } = await usersCollection.where({ openid }).limit(1).get();
+    return Response.ok({ existing: true, user: data[0] }, '调试员账号已存在');
+  }
+  const seed = {
+    openid,
+    name: '调试员',
+    avatar: '',
+    department: 'photography',
+    role: 'debug',
+    semester: getCurrentSemester(),
+    createdAt: new Date().toISOString(),
+    testSeed: true
+  };
+  const { _id } = await usersCollection.add({ data: seed });
+  return Response.ok({ existing: false, user: { ...seed, _id } }, '调试员账号已创建');
+}
+
 exports.main = async (event) => {
-  // 门禁：三动作统一受控
+  // 门禁：动作统一受控
   if (!TEST_CONFIG.enabled) {
     return Response.permissionDenied('测试模式未开启，禁止操作测试数据');
   }
@@ -234,7 +260,10 @@ exports.main = async (event) => {
     if (action === 'clean') {
       return await cleanTestData();
     }
-    return Response.paramError('action 必须为 generate_users / generate / clean');
+    if (action === 'generate_debug_user') {
+      return await generateDebugUser();
+    }
+    return Response.paramError('action 必须为 generate_users / generate / clean / generate_debug_user');
   } catch (err) {
     console.error('[generateTestData] 错误:', err);
     return Response.paramError(err.message || '操作失败');
@@ -245,3 +274,4 @@ exports.main = async (event) => {
 exports.buildSeedUsers = buildSeedUsers;
 exports.buildSeedTasks = buildSeedTasks;
 exports.getCurrentSemester = getCurrentSemester;
+exports.generateDebugUser = generateDebugUser;

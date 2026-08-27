@@ -10,6 +10,7 @@ const { installMock, getMockDb, seed } = require('./_mockCloudSdk.js');
 installMock();
 const createLocation = require('../cloudfunctions/createLocation/index.js').main;
 const db = getMockDb();
+const testConfig = require('../cloudfunctions/createLocation/testConfig.js');
 
 let failed = 0;
 async function test(name, fn) {
@@ -36,10 +37,12 @@ async function run() {
     assert.strictEqual(db._collections.locations[0].name, '会议室机位');
   });
 
-  // TC-51 调试角色信任：成员带 debugRole=center_director 可建
+  // TC-51 调试角色信任：调试员（库角色 debug）带 debugRole=center_director 可建（需开启 testConfig）
   await test('TC-51 调试角色信任可越权创建', async () => {
-    seed({ users: [{ _id: 'u-mem', openid: 'test-openid', role: 'member' }], locations: [] });
+    testConfig.enabled = true;
+    seed({ users: [{ _id: 'u-mem', openid: 'test-openid', role: 'debug' }], locations: [] });
     const res = await createLocation({ name: '调试机位', debugMode: true, debugRole: 'center_director' });
+    testConfig.enabled = false;
     assert.strictEqual(res.code, 0, '调试角色应放行');
     assert.strictEqual(db._collections.locations.length, 1);
   });

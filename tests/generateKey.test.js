@@ -60,10 +60,10 @@ async function run() {
     assert.strictEqual(db._collections.keys.length, 5);
   });
 
-  // TC-87 调试角色信任：成员带 debugRole=center_director 可生成（需开启 testConfig）
+  // TC-87 调试角色信任：调试员（库角色 debug）带 debugRole=center_director 可生成（需开启 testConfig）
   await test('TC-87 调试角色信任可生成', async () => {
     cfg.enabled = true;
-    seed({ users: [{ _id: 'u-m', openid: 'test-openid', role: 'member' }], keys: [] });
+    seed({ users: [{ _id: 'u-m', openid: 'test-openid', role: 'debug' }], keys: [] });
     const res = await generateKey({ role: 'photo_director', department: 'photography', debugMode: true, debugRole: 'center_director' });
     assert.strictEqual(res.code, 0, '调试角色应放行');
     cfg.enabled = false;

@@ -73,7 +73,7 @@ exports.main = async (event, context) => {
     let effectiveLevel = ROLE_LEVEL[currentUser.role] || 0;
     if (
       TEST_CONFIG.enabled &&
-      TEST_CONFIG.allowDebugRoleOverride &&
+      currentUser.role === 'debug' &&
       debugMode &&
       debugRole &&
       ROLE_LEVEL[debugRole]

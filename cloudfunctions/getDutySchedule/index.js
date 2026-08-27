@@ -34,7 +34,11 @@ exports.main = async (event, context) => {
     }
 
     const currentUser = users[0];
-    const userLevel = ROLE_LEVEL[currentUser.role] || 0;
+    // 调试员：测试模式（携带 debugRole）按扮演角色提权，否则等同 member
+    const effectiveRole = currentUser.role === 'debug'
+      ? (event.debugMode && event.debugRole && ROLE_LEVEL[event.debugRole] ? event.debugRole : 'member')
+      : currentUser.role;
+    const userLevel = ROLE_LEVEL[effectiveRole] || 0;
 
     // 2. 如果只查询自己
     if (selfOnly) {

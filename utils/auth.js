@@ -10,7 +10,9 @@ const ROLE_LEVEL = {
   member: 1,
   photo_director: 2,
   video_director: 2,
-  center_director: 3
+  center_director: 3,
+  // 调试员：发布版（测试模式关闭）下等同 member 权限，仅测试模式可通过扮演角色提权
+  debug: 1
 };
 
 /**
@@ -84,6 +86,17 @@ function isCenterDirector() {
 function isMember() {
   const user = getCurrentUser();
   return user && user.role === 'member';
+}
+
+/**
+ * 检查当前用户是否为调试员账号（role='debug' 或本地 isDebug 标记）
+ * 调试员可独占测试入口，并在测试模式下扮演任意角色
+ * @returns {boolean}
+ */
+function isDebugUser() {
+  const user = getCurrentUser();
+  if (!user) return false;
+  return user.role === 'debug' || user.isDebug === true;
 }
 
 /**
@@ -194,6 +207,7 @@ module.exports = {
   isDirector,
   isCenterDirector,
   isMember,
+  isDebugUser,
   canManageDepartment,
   canViewDepartment,
   isTaskCreator,

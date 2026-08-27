@@ -11,6 +11,13 @@
  */
 async function callCloudFunction(name, data = {}) {
   try {
+    // 调试员登录态：统一附加调试角色标记（覆盖所有云函数调用，云端严格校验库角色 role==='debug'）
+    const user = require('./auth.js').getCurrentUser();
+    if (user && user.isDebugLogin && user.isDebug && user.role) {
+      data.debugMode = true;
+      data.debugRole = user.role;
+    }
+
     const res = await wx.cloud.callFunction({
       name,
       data
@@ -62,7 +69,7 @@ async function createTask(taskData) {
   const data = { ...taskData };
   // 测试模式：调试登录用户在本地持有角色，云端需在测试开关下信任
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 createTask 附加调试角色', user.role);
@@ -105,7 +112,7 @@ async function getTasks(params = {}) {
 async function getTemplates() {
   const data = {};
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
   }
@@ -139,7 +146,7 @@ async function createLocation(locationData) {
   const data = { ...locationData };
   // 测试模式：调试登录用户在本地持有角色，云端需在测试开关下信任
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 createLocation 附加调试角色', user.role);
@@ -185,7 +192,7 @@ async function markRead(params = {}) {
 async function updateDutySchedule(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 updateDutySchedule 附加调试角色', user.role);
@@ -210,7 +217,7 @@ async function sendNotification(notificationData) {
 async function generateKey(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 generateKey 附加调试角色', user.role);
@@ -226,7 +233,7 @@ async function generateKey(params = {}) {
 async function getReport(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
   }
@@ -259,7 +266,7 @@ async function getNewsCache(taskId) {
 async function exportReport(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
   }
@@ -275,7 +282,7 @@ async function exportReport(params = {}) {
 async function rateTask(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 rateTask 附加调试角色', user.role);
@@ -291,7 +298,7 @@ async function rateTask(params = {}) {
 async function generateTestData(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 generateTestData 附加调试角色', user.role);
@@ -307,7 +314,7 @@ async function generateTestData(params = {}) {
 async function importDutyRecords(params = {}) {
   const data = { ...params };
   const user = require('./auth.js').getCurrentUser();
-  if (user && user.isDebugLogin && user.role) {
+  if (user && user.isDebugLogin && user.isDebug && user.role) {
     data.debugMode = true;
     data.debugRole = user.role;
     console.log('[API] 调试模式：向 importDutyRecords 附加调试角色', user.role);

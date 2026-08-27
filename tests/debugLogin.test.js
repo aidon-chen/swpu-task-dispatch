@@ -20,7 +20,7 @@ global.wx = {
     callFunction: async () => ({
       result: {
         code: 0,
-        data: { user: { _id: 'u1', openid: 'o1', name: '测试', role: 'member', department: '' } }
+        data: { user: { _id: 'u1', openid: 'o1', name: '测试', role: 'debug', department: '' } }
       }
     })
   }
@@ -55,13 +55,14 @@ async function test(name, fn) {
 }
 
 async function runTests() {
-  // TC-10: 登录页数据包含调试角色列表
+  // TC-10: 登录页数据包含调试角色列表（调试员可扮演任意身份）
   await test('TC-10: 登录页数据包含调试角色列表', () => {
     assert.ok(pageConfig, 'Page 配置应被捕获');
-    assert.strictEqual(pageConfig.data.debugRoles.length, 3, '应有 3 个调试角色');
-    assert.strictEqual(pageConfig.data.debugRoles[0].value, 'photo_director', '第一个角色是摄影部主任');
-    assert.strictEqual(pageConfig.data.debugRoles[1].value, 'video_director', '第二个角色是视频部主任');
-    assert.strictEqual(pageConfig.data.debugRoles[2].value, 'center_director', '第三个角色是视觉中心主任');
+    assert.strictEqual(pageConfig.data.debugRoles.length, 4, '应有 4 个调试角色（普通成员+三个主任）');
+    assert.strictEqual(pageConfig.data.debugRoles[0].value, 'member', '第一个角色是普通成员');
+    assert.strictEqual(pageConfig.data.debugRoles[1].value, 'photo_director', '第二个角色是摄影部主任');
+    assert.strictEqual(pageConfig.data.debugRoles[2].value, 'video_director', '第三个角色是视频部主任');
+    assert.strictEqual(pageConfig.data.debugRoles[3].value, 'center_director', '第四个角色是视觉中心主任');
   });
 
   // TC-11: onLoad 在测试模式下显示调试入口
@@ -88,7 +89,7 @@ async function runTests() {
   // TC-13: 调试登录仅修改本地角色，不调用正式密钥验证
   await test('TC-13: 调试登录本地修改角色', async () => {
     const mockThis = {
-      data: { ...pageConfig.data, selectedDebugRole: 2 },
+      data: { ...pageConfig.data, selectedDebugRole: 3 },
       setData: function(obj) { Object.assign(this.data, obj); }
     };
     await pageConfig.onDebugLogin.call(mockThis);

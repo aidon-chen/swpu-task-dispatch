@@ -14,10 +14,10 @@ const TEST_CONFIG = require('./testConfig.js');
  * 解析"有效角色"
  * 测试模式且前端携带合法 debugRole 时，信任调试角色；否则回退数据库真实角色。
  */
-function resolveEffectiveRole(dbRole, event) {
+function resolveEffectiveRole(user, event) {
   if (
     TEST_CONFIG.enabled &&
-    TEST_CONFIG.allowDebugRoleOverride &&
+    user.role === 'debug' &&
     event.debugMode &&
     event.debugRole &&
     ROLE_LEVEL[event.debugRole]
@@ -25,7 +25,7 @@ function resolveEffectiveRole(dbRole, event) {
     console.log('[createLocation] 测试模式：使用调试角色', event.debugRole);
     return event.debugRole;
   }
-  return dbRole;
+  return user.role;
 }
 
 const Response = {
@@ -47,7 +47,7 @@ exports.main = async (event, context) => {
     if (users.length === 0) return Response.permissionDenied('请先登录');
 
     const user = users[0];
-    const effectiveRole = resolveEffectiveRole(user.role, event);
+    const effectiveRole = resolveEffectiveRole(user, event);
     const userLevel = ROLE_LEVEL[effectiveRole] || 0;
 
     // 删除操作

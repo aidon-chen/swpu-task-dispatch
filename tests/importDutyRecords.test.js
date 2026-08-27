@@ -101,10 +101,10 @@ async function run() {
     assert.strictEqual(left.length, 1, '仅剩 OTHER 记录');
   });
 
-  // TC-219 调试角色信任：member + debugRole=center_director
+  // TC-219 调试角色信任：调试员（库角色 debug）+ debugRole=center_director
   await test('TC-219 调试角色信任生效', async () => {
     on();
-    seed({ users: [MEMBER], duty_records: [] });
+    seed({ users: [{ ...MEMBER, role: 'debug' }], duty_records: [] });
     const res = await fn({ action: 'import', debugMode: true, debugRole: 'center_director' });
     off();
     assert.strictEqual(res.code, 0, '调试中心主任应可导入');

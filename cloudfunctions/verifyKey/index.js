@@ -68,6 +68,11 @@ exports.main = async (event, context) => {
 
     const user = users[0];
 
+    // 调试员账号跳过密钥升级（它已可扮演任意角色，防止密钥流程覆盖其 role='debug' 身份）
+    if (user.role === 'debug') {
+      return Response.paramError('调试员账号无需密钥升级');
+    }
+
     // 4. 检查用户是否已有相同或更高角色
     const roleLevel = { member: 1, photo_director: 2, video_director: 2, center_director: 3 };
     const currentLevel = roleLevel[user.role] || 0;

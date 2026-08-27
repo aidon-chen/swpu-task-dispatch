@@ -35,6 +35,13 @@
       <button class="btn btn-primary btn-block" loading="{{actionLoading}}" bindtap="onGenerateUsers">新建测试用户</button>
     </view>
 
+    <!-- 生成调试员账号 -->
+    <view class="card">
+      <view class="card-title"><t-icon class="icon-card-title" name="user" size="36rpx" color="#1976D2"/>生成调试员账号</view>
+      <view class="card-desc">调试员（role=debug）可独占测试入口、扮演任意角色（成员/主任），用该账号在登录页调试登录</view>
+      <button class="btn btn-warning btn-block" loading="{{actionLoading}}" bindtap="onGenerateDebugUser">生成调试员账号</button>
+    </view>
+
     <!-- S3 生成测试任务 -->
     <view class="card">
       <view class="card-title"><t-icon class="icon-card-title" name="task" size="36rpx" color="#1976D2"/>生成测试任务</view>

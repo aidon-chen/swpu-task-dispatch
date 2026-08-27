@@ -4,6 +4,7 @@
  */
 const api = require('../../utils/api.js');
 const testMode = require('../../utils/testMode.js');
+const auth = require('../../utils/auth.js');
 
 Page({
   data: {
@@ -37,11 +38,14 @@ Page({
 
   /**
    * 读取测试模式状态
+   * 工具可用条件：测试模式开启 && 当前用户是调试员账号（普通账号即使测试模式也只显示占位）
    */
   loadStatus() {
     const status = testMode.getStatus();
+    const user = auth.getCurrentUser();
+    const isDebug = !!user && (user.role === 'debug' || user.isDebug === true);
     this.setData({
-      isTestMode: status.enabled,
+      isTestMode: status.enabled && isDebug,
       envVersion: status.envVersion,
       statusReason: status.reason || ''
     });
@@ -77,6 +81,28 @@ Page({
       }
     } catch (err) {
       console.error('[测试工具] 新建测试用户失败:', err);
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    } finally {
+      this.setData({ actionLoading: false });
+    }
+  },
+
+  /**
+   * 生成调试员账号（role='debug'）
+   * 调试员可独占测试入口、扮演任意角色；用该账号在登录页调试登录
+   */
+  async onGenerateDebugUser() {
+    if (this.data.actionLoading) return;
+    this.setData({ actionLoading: true });
+    try {
+      const res = await api.generateTestData({ action: 'generate_debug_user' });
+      if (res.code === 0) {
+        wx.showToast({ title: res.message || '调试员账号已就绪', icon: 'success' });
+      } else {
+        wx.showToast({ title: res.message || '操作失败', icon: 'none' });
+      }
+    } catch (err) {
+      console.error('[测试工具] 生成调试员账号失败:', err);
       wx.showToast({ title: '操作失败', icon: 'none' });
     } finally {
       this.setData({ actionLoading: false });

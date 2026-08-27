@@ -84,12 +84,12 @@ async function run() {
     assert.strictEqual(res.code, 1);
   });
 
-  // TC-69 调试角色信任：成员带 debugRole=center_director 可改他人（需开启 testConfig）
+  // TC-69 调试角色信任：调试员（库角色 debug）带 debugRole=center_director 可改他人（需开启 testConfig）
   await test('TC-69 调试角色信任可越权改他人', async () => {
     cfg.enabled = true;
     seed({
       users: [
-        { _id: 'u-mem', openid: 'test-openid', role: 'member', department: 'photography' },
+        { _id: 'u-mem', openid: 'test-openid', role: 'debug', department: 'photography' },
         { _id: 'u-x', role: 'member', department: 'video' }
       ],
       duty_schedule: []

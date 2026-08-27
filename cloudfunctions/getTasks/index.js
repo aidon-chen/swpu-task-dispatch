@@ -32,7 +32,11 @@ exports.main = async (event, context) => {
     }
 
     const user = users[0];
-    const userLevel = ROLE_LEVEL[user.role] || 0;
+    // 调试员：测试模式（携带 debugRole）按扮演角色提权，否则等同 member
+    const effectiveRole = user.role === 'debug'
+      ? (event.debugMode && event.debugRole && ROLE_LEVEL[event.debugRole] ? event.debugRole : 'member')
+      : user.role;
+    const userLevel = ROLE_LEVEL[effectiveRole] || 0;
 
     // 2. 如果指定了 taskId，返回单个任务详情
     if (event.taskId) {
