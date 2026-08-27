@@ -124,6 +124,32 @@ async function run() {
     assert.strictEqual(res.data.detailList[0].avgScore, 0);
   });
 
+  // TC-113 只传 startDate：截止今天过滤，不得退化为全量（修复 getDateRange 空值退化 bug）
+  await test('TC-113 只传 startDate 按起始过滤', async () => {
+    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    const res = await getReport({ period: 'custom', startDate: '2026-07-31' });
+    assert.strictEqual(res.code, 0);
+    assert.strictEqual(res.data.detailList[0].total, 0, '张三任务均在 07-31 前，应被过滤为空');
+    assert.strictEqual(res.data.summary.totalTasks, 0, '不应退化为全量');
+  });
+
+  // TC-114 只传 endDate：从学期初起过滤，不得退化为全量
+  await test('TC-114 只传 endDate 按结束过滤', async () => {
+    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    const res = await getReport({ period: 'custom', endDate: '2026-07-09' });
+    assert.strictEqual(res.code, 0);
+    assert.strictEqual(res.data.detailList[0].total, 0, '张三任务均在 07-09 后，应被过滤为空');
+    assert.strictEqual(res.data.summary.totalTasks, 0, '不应退化为全量');
+  });
+
+  // TC-115 起始日期晚于结束日期 → 参数错误
+  await test('TC-115 起始晚于结束返回 paramError', async () => {
+    seed({ users: USERS.slice(), tasks: TASKS.slice() });
+    const res = await getReport({ period: 'custom', startDate: '2026-08-01', endDate: '2026-07-31' });
+    assert.strictEqual(res.code, 1, '应为参数错误');
+    assert.ok((res.message || '').includes('起始日期'), '错误信息应提示起始日期');
+  });
+
   console.log('\ngetReport 测试完成');
   if (failed) process.exitCode = 1;
 }

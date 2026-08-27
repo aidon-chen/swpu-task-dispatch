@@ -132,7 +132,20 @@ Page({
    */
   onPeriodChange(e) {
     const period = e.currentTarget.dataset.period;
-    this.setData({ 'filter.period': period });
+    const patch = { 'filter.period': period };
+
+    // 首次进入自定义周期：自动填充默认日期（近 30 天 ~ 今天），
+    // 避免空值导致 picker 显示/点击异常，同时保证筛选立即生效
+    if (period === 'custom') {
+      if (!this.data.filter.startDate || !this.data.filter.endDate) {
+        const today = new Date();
+        const start = new Date(today.getTime() - 29 * 24 * 3600 * 1000);
+        patch['filter.startDate'] = dateUtil.formatDate(start);
+        patch['filter.endDate'] = dateUtil.formatDate(today);
+      }
+    }
+
+    this.setData(patch);
     this.loadReport();
   },
 
@@ -149,12 +162,24 @@ Page({
    * 自定义日期范围
    */
   onStartDateChange(e) {
-    this.setData({ 'filter.startDate': e.detail.value });
+    const startDate = e.detail.value;
+    const patch = { 'filter.startDate': startDate };
+    // 只填起始日期：结束日期自动默认截止今天
+    if (!this.data.filter.endDate) {
+      patch['filter.endDate'] = dateUtil.formatDate(new Date());
+    }
+    this.setData(patch);
     this.loadReport();
   },
 
   onEndDateChange(e) {
-    this.setData({ 'filter.endDate': e.detail.value });
+    const endDate = e.detail.value;
+    const patch = { 'filter.endDate': endDate };
+    // 只填结束日期：起始日期自动补为同一天（保证区间有效）
+    if (!this.data.filter.startDate) {
+      patch['filter.startDate'] = endDate;
+    }
+    this.setData(patch);
     this.loadReport();
   },
 

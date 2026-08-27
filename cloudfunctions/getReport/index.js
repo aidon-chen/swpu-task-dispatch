@@ -60,9 +60,23 @@ function getDateRange(event) {
   }
 
   if (period === 'custom') {
-    if (!event.startDate || !event.endDate) return null; // 不限制
-    const start = new Date(event.startDate);
-    const end = new Date(event.endDate + ' 23:59:59');
+    const startDate = event.startDate;
+    const endDate = event.endDate;
+
+    // 校验：起始日期不能晚于结束日期
+    if (startDate && endDate && startDate > endDate) {
+      throw new Error('起始日期不能晚于结束日期');
+    }
+
+    // 兜底（不再静默返回 null 退化为全量数据）：
+    //   缺 startDate → 取当前学期初；缺 endDate → 截止今天 23:59:59
+    const start = startDate
+      ? new Date(startDate + 'T00:00:00')
+      : getSemesterStartDate(now, event.semester);
+    const end = endDate
+      ? new Date(endDate + 'T23:59:59') // ISO 格式，iOS JS 引擎兼容
+      : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
     return { start, end };
   }
 
@@ -91,6 +105,25 @@ function getDateRange(event) {
     start: new Date(year, 8, 1),
     end: new Date(year + 1, 0, 31, 23, 59, 59)
   };
+}
+
+/**
+ * 计算学期开始日期（供 custom 周期缺 startDate 时兜底）
+ * 春季 2/1、秋季 9/1；无学期参数时按当前月份推断
+ */
+function getSemesterStartDate(now, semesterName) {
+  const name = semesterName || '';
+  const match = name.match(/(\d{4})年(春季|秋季)学期/);
+  let year = now.getFullYear();
+  let season = 'autumn';
+  if (match) {
+    year = parseInt(match[1], 10);
+    season = match[2] === '春季' ? 'spring' : 'autumn';
+  } else {
+    const m = now.getMonth() + 1;
+    season = (m >= 2 && m <= 6) ? 'spring' : 'autumn';
+  }
+  return season === 'spring' ? new Date(year, 1, 1) : new Date(year, 8, 1);
 }
 
 /**
