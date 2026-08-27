@@ -184,15 +184,6 @@ Page({
   },
 
   /**
-   * picker 点击诊断日志（点中时会在 console 打印，可用于确认点击是否到达 picker）
-   */
-  onPickerTap(e) {
-    const which = e.currentTarget.dataset.which || '?';
-    const key = which === 'start' ? 'startDate' : 'endDate';
-    console.log('[统计] picker 点击:', which, '| value:', this.data.filter[key]);
-  },
-
-  /**
    * 切换图表/列表视图
    */
   onToggleView() {

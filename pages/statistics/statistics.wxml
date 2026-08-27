@@ -14,11 +14,11 @@
 
     <!-- 自定义日期 -->
     <view wx:if="{{filter.period === 'custom'}}" class="stats-date-range mt-16">
-      <picker mode="date" value="{{filter.startDate}}" bindchange="onStartDateChange" bindtap="onPickerTap" data-which="start">
+      <picker mode="date" value="{{filter.startDate}}" start="1970-01-01" end="2099-12-31" fields="day" bindchange="onStartDateChange">
         <view class="form-picker stats-date-picker">{{filter.startDate || '开始日期'}}</view>
       </picker>
       <text class="mx-8">~</text>
-      <picker mode="date" value="{{filter.endDate}}" bindchange="onEndDateChange" bindtap="onPickerTap" data-which="end">
+      <picker mode="date" value="{{filter.endDate}}" start="1970-01-01" end="2099-12-31" fields="day" bindchange="onEndDateChange">
         <view class="form-picker stats-date-picker">{{filter.endDate || '结束日期'}}</view>
       </picker>
     </view>
