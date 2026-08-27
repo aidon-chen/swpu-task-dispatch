@@ -6,5 +6,5 @@
 
 module.exports = {
   /** 是否信任前端传入的调试角色（开发测试期临时开启，发布前复位 false） */
-  enabled: false
+  enabled: true
 };

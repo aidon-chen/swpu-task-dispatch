@@ -4,6 +4,6 @@
  * 部署生产前务必恢复 false（发布红线）。
  */
 module.exports = {
-  enabled: false,
+  enabled: true,
   allowDebugRoleOverride: true
 };

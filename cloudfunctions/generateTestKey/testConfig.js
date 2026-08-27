@@ -5,5 +5,5 @@
 
 module.exports = {
   /** 是否允许生成测试密钥 */
-  enabled: false
+  enabled: true
 };

@@ -6,5 +6,5 @@
 
 module.exports = {
   /** 是否信任前端传入的调试角色 */
-  enabled: false
+  enabled: true
 };

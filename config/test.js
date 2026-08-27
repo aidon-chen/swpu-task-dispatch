@@ -5,7 +5,7 @@
 
 module.exports = {
   /** 主开关 */
-  enabled: false,
+  enabled: true,
 
   /** 子功能开关 */
   features: {

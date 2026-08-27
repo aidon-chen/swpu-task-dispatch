@@ -47,15 +47,19 @@ function parseArgs(argv) {
 
 /**
  * 改写文件的 enabled 字段（保注释，只动值）
+ * 注意：必须取「最后一个」匹配——config/test.js 的注释里也有 "enabled: xxx" 字样，
+ *       用第一个匹配会误改注释、漏掉真实字段。
  */
 function rewriteEnabled(filePath, targetValue) {
   const content = fs.readFileSync(filePath, 'utf-8');
-  const pattern = /enabled:\s*(true|false)/;
-  if (!pattern.test(content)) {
+  const pattern = /enabled:\s*(true|false)/g;
+  const matches = [...content.matchAll(pattern)];
+  if (!matches.length) {
     console.warn(`  ⚠️ 未找到 enabled 字段: ${filePath}`);
     return false;
   }
-  const next = content.replace(pattern, `enabled: ${targetValue}`);
+  const last = matches[matches.length - 1];
+  const next = content.slice(0, last.index) + `enabled: ${targetValue}` + content.slice(last.index + last[0].length);
   fs.writeFileSync(filePath, next, 'utf-8');
   return true;
 }

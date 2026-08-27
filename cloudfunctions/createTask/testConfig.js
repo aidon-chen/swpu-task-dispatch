@@ -11,6 +11,6 @@
  *     即使前端误传 debugMode，云端也会忽略，回退到数据库真实角色）。
  */
 module.exports = {
-  enabled: false,
+  enabled: true,
   allowDebugRoleOverride: true
 };
