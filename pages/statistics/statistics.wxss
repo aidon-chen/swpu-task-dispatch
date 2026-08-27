@@ -153,3 +153,15 @@
   font-weight: 700;
   color: var(--primary);
 }
+
+/* 自定义日期选择器：明确可点击视觉反馈 */
+.stats-date-picker {
+  background: var(--bg-color, #fff);
+  border: 2rpx solid var(--border-color, #e0e0e0);
+  border-radius: 12rpx;
+  cursor: pointer;
+}
+.stats-date-picker:active {
+  background: #e6f4ff;
+  border-color: #1976D2;
+}
