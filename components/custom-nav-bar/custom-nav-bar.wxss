@@ -1,0 +1,88 @@
+/**
+ * 自定义导航栏样式
+ */
+
+.custom-nav-bar {
+  position: relative;
+  z-index: 999;
+  width: 100%;
+}
+
+/* 导航栏主体 + 占位区域共享背景色，视觉一体 */
+.custom-nav-bar > view:first-child,
+.nav-placeholder {
+  background-color: inherit;
+}
+
+.nav-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+/* 左侧返回按钮 */
+.nav-left {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16rpx;
+  z-index: 10;
+}
+
+.back-icon {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.back-arrow {
+  font-size: 48rpx;
+  font-weight: 300;
+  color: inherit;
+  line-height: 1;
+  margin-top: -4rpx;
+}
+
+/* 标题区域 - 核心：溢出保护 */
+.nav-title-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 关键：溢出省略 */
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  /* 溢出保护三件套 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  display: block;
+  text-align: center;
+}
+
+/* 右侧占位（有返回时保持标题居中） */
+.nav-right {
+  width: 80rpx;
+  flex-shrink: 0;
+}
+
+/* 无返回按钮时标题完全居中 */
+.nav-content:not(:has(.nav-left)) .nav-title-wrap {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}

@@ -1,5 +1,9 @@
 <!-- 个人中心页面 -->
-<view class="container">
+<view class="profile-page">
+  <!-- 自定义导航栏 -->
+  <custom-nav-bar title="个人中心" backgroundColor="#1976D2" noPlaceholder />
+  
+  <view class="container">
   <!-- 用户信息卡片 -->
   <view class="profile-header">
     <image class="profile-avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"/>
@@ -38,4 +42,5 @@
   </view>
 
   <view style="height: 60rpx;"></view>
+</view>
 </view>

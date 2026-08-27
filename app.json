@@ -20,6 +20,7 @@
   ],
   "window": {
     "backgroundTextStyle": "light",
+    "navigationStyle": "custom",
     "navigationBarBackgroundColor": "#1976D2",
     "navigationBarTitleText": "任务派发系统",
     "navigationBarTextStyle": "white",

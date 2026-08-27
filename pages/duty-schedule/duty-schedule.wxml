@@ -1,5 +1,9 @@
 <!-- 值班表页面 -->
-<view class="container">
+<view class="duty-page">
+  <!-- 自定义导航栏 -->
+  <custom-nav-bar title="值班表" backgroundColor="#1976D2" noPlaceholder />
+  
+  <view class="container">
   <!-- 本周值班安排（PRD 值班表导入，可折叠） -->
   <view class="card mt-16">
     <view class="duty-collapse-header" bindtap="onToggleDuty">
@@ -223,4 +227,5 @@
     </block>
     <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onSaveWeeklySchedule">保存设置</button>
   </view>
+</view>
 </view>

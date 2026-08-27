@@ -2,6 +2,12 @@
  * 值班表页面样式
  */
 
+.duty-page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  padding-top: 16rpx;
+}
+
 /* 统计摘要 */
 .schedule-summary {
   display: flex;

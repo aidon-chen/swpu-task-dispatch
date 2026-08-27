@@ -1,5 +1,8 @@
 <!-- 首页 - 任务列表 -->
 <view class="index-page">
+  <!-- 自定义导航栏 -->
+  <custom-nav-bar title="任务列表" backgroundColor="#1976D2" noPlaceholder />
+  
   <!-- 头部统计 -->
   <view class="index-header">
     <view class="index-greeting">

@@ -1,0 +1,26 @@
+<!-- 自定义导航栏组件 -->
+<view class="custom-nav-bar" style="background-color: {{backgroundColor}}; {{customStyle}}">
+  <!-- 状态栏占位 -->
+  <view style="height: {{statusBarHeight}}px;"></view>
+  
+  <!-- 导航栏内容区 -->
+  <view class="nav-content" style="height: {{navBarHeight}}px;">
+    <!-- 返回按钮（可选） -->
+    <view class="nav-left" wx:if="{{showBack}}" bindtap="onBack">
+      <view class="back-icon">
+        <text class="back-arrow">‹</text>
+      </view>
+    </view>
+    
+    <!-- 标题 -->
+    <view class="nav-title-wrap" style="width: {{titleWidth}}px;">
+      <text class="nav-title" style="color: {{textColor}};">{{title}}</text>
+    </view>
+    
+    <!-- 右侧占位（保持标题居中视觉平衡） -->
+    <view class="nav-right" wx:if="{{showBack}}"></view>
+  </view>
+</view>
+
+<!-- 占位元素：防止页面内容被固定导航栏遮挡，背景与导航栏一致 -->
+<view class="nav-placeholder" style="height: {{statusBarHeight + navBarHeight}}px; background-color: {{backgroundColor}};" wx:if="{{!noPlaceholder}}"></view>

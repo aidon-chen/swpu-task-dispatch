@@ -2,6 +2,12 @@
  * 统计报表页面样式
  */
 
+.stats-page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  padding-top: 16rpx;
+}
+
 .stats-filters {
   margin-bottom: 24rpx;
 }
@@ -9,10 +15,15 @@
 .stats-filters-row {
   display: flex;
   gap: 12rpx;
+  flex-wrap: wrap; /* 极端窄屏/大字体下允许换行兜底，避免溢出容器 */
 }
 
 .stats-filter-btn {
   flex: 1;
+  min-width: 0; /* 允许 flex 子项收缩到小于内容宽度（华为大字体下文字不被撑出） */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超宽文字省略号 */
+  white-space: nowrap; /* 文字不换行 */
   text-align: center;
   padding: 14rpx;
   border-radius: 8rpx;

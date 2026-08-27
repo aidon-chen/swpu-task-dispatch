@@ -2,7 +2,8 @@
   "navigationBarTitleText": "任务列表",
   "usingComponents": {
     "task-card": "/components/task-card/task-card",
-    "status-badge": "/components/status-badge/status-badge"
+    "status-badge": "/components/status-badge/status-badge",
+    "custom-nav-bar": "/components/custom-nav-bar/custom-nav-bar"
   },
   "enablePullDownRefresh": true
 }

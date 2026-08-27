@@ -1,5 +1,9 @@
 <!-- 统计报表页面 -->
-<view class="container">
+<view class="stats-page">
+  <!-- 自定义导航栏 -->
+  <custom-nav-bar title="统计报表" backgroundColor="#1976D2" noPlaceholder />
+  
+  <view class="container">
   <!-- 筛选栏 -->
   <view class="stats-filters">
     <view class="stats-filters-row">
@@ -108,4 +112,5 @@
   <button class="btn btn-primary btn-block mt-24" loading="{{loading}}" bindtap="onExport"><t-icon class="icon-inline" name="export" size="32rpx"/>导出报表（复制到剪贴板）</button>
 
   <view style="height: 60rpx;"></view>
+</view>
 </view>
