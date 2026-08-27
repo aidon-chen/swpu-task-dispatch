@@ -11,7 +11,11 @@
   },
   "scripts": {
     "deploy": "node scripts/deploy-functions.js",
-    "deploy:dry": "node scripts/deploy-functions.js --dry-run"
+    "deploy:dry": "node scripts/deploy-functions.js --dry-run",
+    "mode:test": "node scripts/switch-mode.js test",
+    "mode:release": "node scripts/switch-mode.js release",
+    "mode:test:no-deploy": "node scripts/switch-mode.js test --no-deploy",
+    "mode:release:no-deploy": "node scripts/switch-mode.js release --no-deploy"
   },
   "author": "",
   "license": "ISC"
